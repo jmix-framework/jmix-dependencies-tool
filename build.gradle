@@ -1,0 +1,11 @@
+tasks.register('bundleDist', Zip) {
+    dependsOn gradle.includedBuild('deptool').task(':installDist')
+    archiveFileName = "deptool.zip"
+    destinationDirectory = layout.buildDirectory.dir('dist')
+
+    from project.layout.projectDirectory.dir('deptool/build/install')
+    from (project.layout.projectDirectory.dir('resolver')) {
+        exclude '**/build', '**/.gradle'
+        into 'deptool/resolver'
+    }
+}

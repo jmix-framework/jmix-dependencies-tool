@@ -1,0 +1,4 @@
+rootProject.name = 'jmix-dependencies-tool'
+
+includeBuild 'resolver'
+includeBuild 'deptool'
