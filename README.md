@@ -13,13 +13,23 @@
 
 ## Building the Distribution
 
-Run the following command to build the tool distribution:
+Run the following command to build unarchived tool distribution:
 
 ```shell
-./gradlew bundleDist
+./gradlew assembleBundle
 ```
 
-The task produces the `build/dist/deplool.zip` archive. After extracting the archive use `bin/deptool.sh` or `bin/deptool.bat` files to execute commands.
+This task will prepare an unzipped tool distribution that contains command line utility and gradle resolver project. The bundle will be placed to the `build/bundle` directory.
+
+Run the  following command to build archived tool distribution:
+
+```shell
+./gradlew zipBundle
+```
+
+The task produces the `build/distribution/deplool.zip` archive. 
+
+After extracting the archive (or when using unarchived bundle) use `bin/deptool.sh` or `bin/deptool.bat` files to execute commands.
 
 Distribution directories structure:
 
