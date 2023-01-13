@@ -1,23 +1,23 @@
-tasks.register('assembleBundle', Copy) {
+tasks.register('prepareDist', Copy) {
     dependsOn tasks.copyDeptool, tasks.copyResolver
 }
 
-tasks.register('zipBundle', Zip) {
-    dependsOn tasks.assembleBundle
+tasks.register('zipDist', Zip) {
+    dependsOn tasks.prepareDist
     archiveFileName = "deptool.zip"
-    destinationDirectory = layout.buildDirectory.dir('distribution')
-    from project.layout.buildDirectory
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    from project.layout.buildDirectory.dir('install')
 }
 
 tasks.register('copyDeptool', Copy) {
     dependsOn gradle.includedBuild('deptool').task(':installDist')
     from project.layout.projectDirectory.dir('deptool/build/install')
-    into project.layout.buildDirectory.dir('bundle')
+    into project.layout.buildDirectory.dir('install')
 }
 
 tasks.register('copyResolver', Copy) {
     from (project.layout.projectDirectory.dir('resolver')) {
         exclude '**/build', '**/.gradle'
     }
-    into project.layout.buildDirectory.dir('bundle/deptool/resolver')
+    into project.layout.buildDirectory.dir('install/deptool/resolver')
 }
