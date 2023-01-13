@@ -23,15 +23,15 @@ public class JmixDependencies {
             "com.oracle.database.jdbc:ojdbc8"
     );
 
-    public static Set<String> getVersionSpecificJmixDependencies(String jmixVersion) {
+    public static Set<String> getVersionSpecificJmixDependencies(String jmixVersion, boolean resolveCommercialAddons) {
         String minorJmixVersion = getMinorVersion(jmixVersion);
-        Set<String> dependencies = _getVersionSpecificDependencies(minorJmixVersion);
-        dependencies.addAll(_getVersionSpecificDependencies(jmixVersion));
+        Set<String> dependencies = _getVersionSpecificDependencies(minorJmixVersion, resolveCommercialAddons);
+        dependencies.addAll(_getVersionSpecificDependencies(jmixVersion, resolveCommercialAddons));
         return dependencies;
     }
 
-    private static Set<String> _getVersionSpecificDependencies(String version) {
-        try (InputStream is = JmixDependencies.class.getResourceAsStream("/jmix-dependencies/" + version + ".xml")) {
+    private static Set<String> _getVersionSpecificDependencies(String version, boolean resolveCommercialAddons) {
+        try (InputStream is = JmixDependencies.class.getResourceAsStream("/jmix-dependencies/dependencies-" + version + ".xml")) {
             if (is == null) {
                 log.debug("Dependencies file for version {} not found", version);
                 return new HashSet<>();
@@ -39,10 +39,20 @@ public class JmixDependencies {
             log.debug("Parsing dependencies file: {}", version + ".xml");
             SAXReader reader = new SAXReader();
             Document document = reader.read(is);
-            List<Node> nodes = document.selectNodes("/dependencies/dependency");
-            return nodes.stream()
-                    .map(node -> node.getText())
+            Set<String> dependencies = new HashSet<>();
+            List<Node> nodes = document.selectNodes("/dependencies/open-source-dependencies/dependency");
+            Set<String> openSourceDependencies = nodes.stream()
+                    .map(Node::getText)
                     .collect(Collectors.toSet());
+            dependencies.addAll(openSourceDependencies);
+            if (resolveCommercialAddons) {
+                List<Node> commercialNodes = document.selectNodes("/dependencies/commercial-dependencies/dependency");
+                Set<String> commercialDependencies = commercialNodes.stream()
+                        .map(Node::getText)
+                        .collect(Collectors.toSet());
+                dependencies.addAll(commercialDependencies);
+            }
+            return dependencies;
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (DocumentException e) {

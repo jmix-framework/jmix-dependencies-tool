@@ -31,12 +31,15 @@ public class ResolveJmixCommand implements BaseCommand {
     @Parameter(names = {"--resolver-project"}, description = "Path to dependencies resolver project", order = 3)
     private String resolverProjectPath;
 
-    @Parameter(names = {"--jmix-license-key"}, description = "Jmix license key (required if project uses commercial add-ons)", order = 4)
+    @Parameter(names = {"--resolve-commercial-addons"}, description = "Whether to resolve Jmix commercial add-ons", order = 4)
+    private boolean resolveCommercialAddons;
+
+    @Parameter(names = {"--jmix-license-key"}, description = "Jmix license key (required if for commercial add-ons)", order = 5)
     private String jmixLicenseKey;
 
     @Parameter(names = {"--repository"}, description = "Additional Maven repository for dependencies resolution. The format is " +
             "the following: <url>|<username>|<password>, e.g. http://localhost:8081/jmix|admin|admin. " +
-            "If credentials are not required then just an URL must be passed", order = 5)
+            "If credentials are not required then just an URL must be passed", order = 6)
     private List<String> repositories;
 
     @Override
@@ -58,7 +61,7 @@ public class ResolveJmixCommand implements BaseCommand {
         JmixGradleClient jmixGradleClient = new JmixGradleClient(resolverProjectPath, gradleUserHome);
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
             List<String> dependencies = new ArrayList<>();
-            dependencies.addAll(JmixDependencies.getVersionSpecificJmixDependencies(jmixVersion));
+            dependencies.addAll(JmixDependencies.getVersionSpecificJmixDependencies(jmixVersion, resolveCommercialAddons));
             dependencies.addAll(JmixDependencies.getDatabaseDriverDependencies());
             dependencies.sort(Comparator.naturalOrder());
             for (String dependency : dependencies) {
