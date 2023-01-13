@@ -13,7 +13,7 @@ public class DefaultPaths {
     }
 
     public static String getDefaultExportDir() {
-        return Paths.get(System.getProperty("user.dir")).resolve("../jmix-dependencies").toAbsolutePath().toString();
+        return Paths.get(System.getProperty("user.dir")).resolve("../export").toAbsolutePath().toString();
     }
 
 }

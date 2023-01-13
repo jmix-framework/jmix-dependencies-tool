@@ -31,7 +31,7 @@ public class ResolveJmixCommand implements BaseCommand {
     @Parameter(names = {"--resolver-project"}, description = "Path to dependencies resolver project", order = 3)
     private String resolverProjectPath;
 
-    @Parameter(names = {"--resolve-commercial-addons"}, description = "Whether to resolve Jmix commercial add-ons", order = 4)
+    @Parameter(names = {"--resolve-commercial-addons"}, description = "Whether to resolve Jmix commercial add-ons. --jmix-license-key must be provided in this case.", order = 4)
     private boolean resolveCommercialAddons;
 
     @Parameter(names = {"--jmix-license-key"}, description = "Jmix license key (required if for commercial add-ons)", order = 5)

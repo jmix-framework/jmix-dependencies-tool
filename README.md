@@ -2,9 +2,14 @@
 
 ## Overview
 
-Deptool is a command-line tool that provides an ability to resolve, export and upload to an external repository all dependencies for Jmix framework or any external library with a few simple commands. 
+`deptool` is a command-line utility that helps to prepare custom Nexus repository for developing projects based on Jmix in an isolated environment (without internet access).
 
-Deptool is used when developing Jmix applications in an isolated environment (without internet access).
+`deptool` provides the following functionality:
+
+* resolve all dependencies for Jmix framework
+* resolve dependencies for any custom library
+* export resolved dependencies in Maven repository format
+* upload exported dependencies into custom Nexus repository
 
 ## Building the Distribution
 
@@ -42,17 +47,19 @@ The tool can resolve all dependencies required for specific Jmix version.
 ./deptool resolve-jmix --jmix-version 1.4.2
 ```
 
-The command resolves and downloads dependencies required for free (not commercial) Jmix starters to the Gradle cache. 
+The command resolves and downloads dependencies required for Jmix starters to the Gradle cache. 
 
 Command options:
 
 * `--jmix-version` (required) - the Jmix framework version.
 * `--jmix-plugin-version` - Jmix plugin version. If not defined the value from the `--jmix-version` will be used.
+* `--resolve-commercial-addons` - whether to resolve Jmix commercial add-ons. The `--jmix-license-key` option must be provided in this case. By default, only open-source modules dependencies are resolved.
+* `--jmix-license-key` - your Jmix license key. This option is required if you resolve dependencies that use Jmix commercial add-ons.
 * `--gradle-user-home` - gradle user home directory. It is the directory where dependencies will be downloaded to. This directory must distinct from the user home of the gradle installed on your machine in order to contain only dependencies required for Jmix. The default value is `../gradle-home`.
 * `--resolver-project` - a path to a spacial gradle project used for dependencies resolution. This project is delivered within the distribution bundle. The default value is `../resolver`.
 * `--repository` - additional Maven repository that must be used for dependencies resolution. If no authentication is required then pass repository URL as parameter value. If authentication is required, then pass URL, username and password separated by `|`, e.g. `http://localhost:8081/jmix|admin|admin`
 
-If you run the command from within the `deptool\bin` directory then the only required option is the `--jmix-version`. Other options have default values that works for that case. If you run the command from some place then you will need to configure a location of gradle home and a location of the resolver project. 
+If you run the command from within the `deptool/bin` directory then the only required option is the `--jmix-version`. Other options have default values that works for that case. If you run the command from some place then you will need to configure a location of gradle home and a location of the resolver project.
 
 ### Resolve a Single Library (resolve-lib)
 
@@ -89,11 +96,11 @@ The command copies all resolved artifact from the gradle user home directory to 
 ./deptool export
 ```
 
-By default, if you run the deptool from the `deptool/bin` directory the command will export artifacts to the `deptool\jmix-dependencies` directory. If you want to change the output directory location, use the `--target-dir` option.
+By default, if you run the `deptool` from the `deptool/bin` directory the command will export artifacts to the `deptool/export` directory. If you want to change the output directory location, use the `--target-dir` option.
 
 Command options:
 
-* `--target-dir` - a directory where dependencies artifacts will be exported to (`../jmix-dependencies` by default).
+* `--target-dir` - a directory where dependencies artifacts will be exported to (`../export` by default).
 * `--gradle-user-home` - see `resolve-jmix` command documentation.
 
 ## Upload Exported Dependencies to Nexus Repository (upload)
@@ -105,7 +112,7 @@ The command uploads artifacts that were exported by the `export` command to the 
   --nexus-repository jmix \
   --nexus-username admin \
   --nexus-password adminpass \
-  --artifacts-dir ../jmix-dependencies
+  --artifacts-dir ../export
 ```
 
 Command options:
