@@ -61,11 +61,11 @@ Command options:
 * `--resolver-project` - a path to a spacial gradle project used for dependencies resolution. This project is delivered within the distribution bundle. The default value is `../resolver`.
 * `--repository` - additional Maven repository that must be used for dependencies resolution. If no authentication is required then pass repository URL as parameter value. If authentication is required, then pass URL, username and password separated by `|`, e.g. `http://localhost:8081/jmix|admin|admin`
 
-If you run the command from within the `deptool/bin` directory then the only required option is the `--jmix-version`. Other options have default values that works for that case. If you run the command from some place then you will need to configure a location of gradle home and a location of the resolver project.
+If you run the command from within the `deptool/bin` directory then the only required option is the `--jmix-version`. Other options have default values that work for that case. If you run the command from some other place then you need to configure a location of gradle home and a location of the resolver project.
 
 ### Resolve a Single Library (resolve-lib)
 
-The command transitively resolves artifacts used by any single dependency. The dependency coordinates may be defined with or without version. In the latter case the version may be evaluated using Jmix and Spring Boot BOMs. 
+The command transitively resolves artifacts used by any single dependency.
 
 ```shell
 ./deptool resolve-lib javax.validation:validation-api:1.0.0.GA
@@ -80,19 +80,11 @@ Command options:
 * `--jmix-license-key` - your Jmix license key. This option is required if you resolve dependencies that use Jmix commercial add-ons.
 * `--repository` - see `resolve-jmix` command documentation.
 
-If `--jmix-version` is not defined then Jmix BOM will not be used during dependency resolution.
-
-If you want to resolve artifact dependencies using Jmix BOM file, do something like this:
-
-```shell
-./deptool resolve-lib io.jmix.bpm:jmix-bpm-starter \
-  --jmix-version 1.4.2 \
-  --jmix-license-key XXX-YYY
-```
+If `--jmix-version` option is defined then Jmix BOM will be used during dependency resolution. Jmix BOM is not used by default.
 
 ## Export Resolved Dependencies (export)
 
-The command copies all resolved artifact from the gradle user home directory to the specific target directory. In the target directory files will be organized in a Maven directory structure, so the target directory can be attached to Jmix project as Maven repository.
+The command copies all resolved artifact from the gradle user home directory to the specific target directory. In the target directory files will be organized in a Maven repository format.
 
 ```shell
 ./deptool export
@@ -103,11 +95,11 @@ By default, if you run the `deptool` from the `deptool/bin` directory the comman
 Command options:
 
 * `--target-dir` - a directory where dependencies artifacts will be exported to (`../export` by default).
-* `--gradle-user-home` - see `resolve-jmix` command documentation.
+* `--gradle-user-home` - gradle home directory with resolved dependencies. See `resolve-jmix` command documentation.
 
 ## Upload Exported Dependencies to Nexus Repository (upload)
 
-The command uploads artifacts that were exported by the `export` command to the Nexus repository.
+The command uploads artifacts exported by the `export` command to the Nexus repository.
 
 ```shell
 ./deptool upload --nexus-url http://localhost:8081 \
@@ -209,7 +201,6 @@ The `JmixDependenciesPlugin` adds the `resolveDependencies` task. This task is i
 ```shell
 ./gradlew resolveDependencies \
   --dependency javax.validation:validation-api:1.0.0.GA \
-  --dependency-configuration implementation \
   --repository "http://some-external-repo.com:8081/repo|user|password" \
   -PjmixVersion=1.4.2 \
   -PjmixPluginVersion=1.4.2 \
