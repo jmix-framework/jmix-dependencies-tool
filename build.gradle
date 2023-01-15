@@ -1,5 +1,5 @@
 tasks.register('prepareDist', Copy) {
-    dependsOn tasks.copyDeptool, tasks.copyResolver
+    dependsOn tasks.cleanBuild, tasks.copyDeptool, tasks.copyResolver
 }
 
 tasks.register('zipDist', Zip) {
@@ -20,4 +20,8 @@ tasks.register('copyResolver', Copy) {
         exclude '**/build', '**/.gradle'
     }
     into project.layout.buildDirectory.dir('install/deptool/resolver')
+}
+
+tasks.register('cleanBuild', Delete) {
+    delete project.buildDir
 }
