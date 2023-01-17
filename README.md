@@ -11,15 +11,11 @@
 * export resolved dependencies in Maven repository format
 * upload exported dependencies into custom Nexus repository
 
-## Building the Distribution
+## Installation
 
-Run the following command to build the `deptool` tool distribution:
+In order to run the tool Java 11+ must be installed on the machine.
 
-```shell
-./gradlew zipDist
-```
-
-The task produces the `build/distributions/deplool.zip` archive. 
+The tool distribution (zip archive) may be downloaded from the [Releases](https://github.com/jmix-framework/jmix-dependencies-tool/releases) page.
 
 After extracting the archive use `bin/deptool.sh` or `bin/deptool.bat` files for executing CLI commands.
 
@@ -205,4 +201,32 @@ The `JmixDependenciesPlugin` adds the `resolveDependencies` task. This task is i
   -PjmixVersion=1.4.2 \
   -PjmixPluginVersion=1.4.2 \
   -PjmixLicenseKey=<your_key>
+```
+
+
+## Building the Distribution
+
+To build the distribution locally run the following command to build the `deptool` tool distribution:
+
+```shell
+./gradlew zipDist
+```
+
+or pass the "version" parameter if you want to build the distribution with the specific version:
+
+```shell
+./gradlew zipDist -Pversion=1.2.3
+```
+
+The task produces the `build/distributions/deplool-<version>.zip` archive.
+
+After extracting the archive use `bin/deptool.sh` or `bin/deptool.bat` files for executing CLI commands.
+
+Distribution directories structure:
+
+```text
+deptool
+  -  bin (contains CLI executables)
+  -  lib (required Java libraries)
+  -  resolver (Gradle project used by the tool to resolve dependencies)
 ```
