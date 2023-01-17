@@ -55,7 +55,6 @@ Command options:
 * `--jmix-license-key` - your Jmix license key. This option is required if you resolve dependencies that use Jmix commercial add-ons.
 * `--gradle-user-home` - gradle user home directory. It is the directory where dependencies will be downloaded to. This directory must distinct from the user home of the gradle installed on your machine in order to contain only dependencies required for Jmix. The default value is `../gradle-home`.
 * `--resolver-project` - a path to a spacial gradle project used for dependencies resolution. This project is delivered within the distribution bundle. The default value is `../resolver`.
-* `--repository` - additional Maven repository that must be used for dependencies resolution. If no authentication is required then pass repository URL as parameter value. If authentication is required, then pass URL, username and password separated by `|`, e.g. `http://localhost:8081/jmix|admin|admin`
 
 If you run the command from within the `deptool/bin` directory then the only required option is the `--jmix-version`. Other options have default values that work for that case. If you run the command from some other place then you need to configure a location of gradle home and a location of the resolver project.
 
@@ -74,7 +73,8 @@ Command options:
 * `--gradle-user-home` - see `resolve-jmix` command documentation.
 * `--resolver-project` - see `resolve-jmix` command documentation.
 * `--jmix-license-key` - your Jmix license key. This option is required if you resolve dependencies that use Jmix commercial add-ons.
-* `--repository` - see `resolve-jmix` command documentation.
+* `--repository` - additional Maven repository that must be used for dependencies resolution. If no authentication is required then pass repository URL as parameter value. If authentication is required, then pass URL, username and password separated by `|`, e.g. `http://localhost:8081/jmix|admin|admin`
+
 
 If `--jmix-version` option is defined then Jmix BOM will be used during dependency resolution. Jmix BOM is not used by default.
 
