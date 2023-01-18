@@ -28,6 +28,25 @@ deptool
   -  resolver (Gradle project used by the tool to resolve dependencies)
 ```
 
+## Usage Scenarios
+
+### Fill Custom Nexus Repository with Pre-built Jmix Dependencies
+
+In case application development is done in an isolated environment teams most often have an artifact management system (e.g. Nexus). The `deptool` may be used for uploading Jmix artifacts to custom Nexus repository. An archive with Jmix dependencies may be downloaded from Jmix website (the download link will appear here later).
+
+After the archive is downloaded, unzip it. The [upload](#upload-exported-dependencies-to-nexus-repository-upload) command can be used to upload all jmix dependencies artifacts to the repository, e.g.:
+
+```shell
+./deptool upload --nexus-url http://localhost:8081 \
+--nexus-repository jmix \
+--nexus-username admin \
+--nexus-password admin \
+--artifacts-dir /opt/dependencies/jmix-dependencies-1.4.2
+```
+
+After all artifacts are uploaded to the Nexus repository you should select custom Nexus repository while creating a new Jmix project in IntelliJ Idea. See the [Adopt Projects For Working with Custom Nexus Repository](#adopt-projects-for-working-with-custom-nexus-repository) section.
+
+
 ## Dependencies Resolution
 
 The tool delegates dependencies resolution to a special Gradle project. The flow for getting required dependencies for Jmix framework of specific version or for any other library is the following: 
@@ -52,8 +71,8 @@ Command options:
 * `--jmix-version` (required) - the Jmix framework version.
 * `--jmix-plugin-version` - Jmix plugin version. If not defined the value from the `--jmix-version` will be used.
 * `--resolve-commercial-addons` - whether to resolve Jmix commercial add-ons. The `--jmix-license-key` option must be provided in this case. By default, only open-source modules dependencies are resolved.
-* `--jmix-license-key` - your Jmix license key. This option is required if you resolve dependencies that use Jmix commercial add-ons.
-* `--gradle-user-home` - gradle user home directory. It is the directory where dependencies will be downloaded to. This directory must distinct from the user home of the gradle installed on your machine in order to contain only dependencies required for Jmix. The default value is `../gradle-home`.
+* `--jmix-license-key` - your Jmix license key. This option is required if you resolve Jmix commercial add-ons.
+* `--gradle-user-home` - gradle user home directory. It is the directory where dependencies will be downloaded to by Gradle. This directory must distinct from the user home of the gradle installed on your machine in order to contain only dependencies required for Jmix. The default value is `../gradle-home`.
 * `--resolver-project` - a path to a spacial gradle project used for dependencies resolution. This project is delivered within the distribution bundle. The default value is `../resolver`.
 
 If you run the command from within the `deptool/bin` directory then the only required option is the `--jmix-version`. Other options have default values that work for that case. If you run the command from some other place then you need to configure a location of gradle home and a location of the resolver project.
