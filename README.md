@@ -44,8 +44,9 @@ After the archive is downloaded, unzip it. The [upload](#upload-exported-depende
 --artifacts-dir /opt/dependencies/jmix-dependencies-1.4.2
 ```
 
-After all artifacts are uploaded to the Nexus repository you should select custom Nexus repository while creating a new Jmix project in IntelliJ Idea. See the [Adopt Projects For Working with Custom Nexus Repository](#adopt-projects-for-working-with-custom-nexus-repository) section.
+Nexus repository installation is briefly described in [this section](#install-custom-nexus-repository).
 
+After all artifacts are uploaded to the Nexus repository you should select custom Nexus repository while creating a new Jmix project in IntelliJ Idea. See the [Adopt Projects For Working with Custom Nexus Repository](#adopt-projects-for-working-with-custom-nexus-repository) section.
 
 ## Dependencies Resolution
 
