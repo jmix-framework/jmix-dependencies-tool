@@ -27,6 +27,10 @@ public class JmixDependencies {
         String minorJmixVersion = getMinorVersion(jmixVersion);
         Set<String> dependencies = _getVersionSpecificDependencies(minorJmixVersion, resolveCommercialAddons);
         dependencies.addAll(_getVersionSpecificDependencies(jmixVersion, resolveCommercialAddons));
+        //if there are no files for the given dependency version then use the default file (dependencies-default.xml)
+        if (dependencies.isEmpty()) {
+            dependencies.addAll(_getVersionSpecificDependencies("default", resolveCommercialAddons));
+        }
         return dependencies;
     }
 
