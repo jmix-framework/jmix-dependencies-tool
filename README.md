@@ -17,7 +17,7 @@ In order to run the tool Java 11+ must be installed on the machine.
 
 The tool distribution (zip archive) may be downloaded from the [Releases](https://github.com/jmix-framework/jmix-dependencies-tool/releases) page.
 
-After extracting the archive use `bin/deptool.sh` or `bin/deptool.bat` files for executing CLI commands.
+After extracting the archive use `bin/deptool` or `bin/deptool.bat` files for executing CLI commands.
 
 Distribution directories structure:
 
