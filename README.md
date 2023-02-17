@@ -78,6 +78,8 @@ Command options:
 
 If you run the command from within the `deptool/bin` directory then the only required option is the `--jmix-version`. Other options have default values that work for that case. If you run the command from some other place then you need to configure a location of gradle home and a location of the resolver project.
 
+Keep in mind that multiple invocations of the `resolve` command for resolving dependencies for different Jmix versions will accumulate dependencies for all resolved versions in the gradle user home (`../gradle-home`). If you need to export dependencies for specific version only and do not need dependencies of previous resolving operations then you have to clean the `gradle-home` directory.  
+
 ### Resolve a Single Library (resolve-lib)
 
 The command transitively resolves artifacts used by any single dependency.
