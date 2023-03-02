@@ -30,23 +30,12 @@ deptool
 
 ## Usage Scenarios
 
-### Fill Custom Nexus Repository with Pre-built Jmix Dependencies
+The general usage scenario is the following:
 
-In case application development is done in an isolated environment teams most often have an artifact management system (e.g. Nexus). The `deptool` may be used for uploading Jmix artifacts to custom Nexus repository. An archive with Jmix dependencies may be downloaded from Jmix website (the download link will appear here later).
-
-After the archive is downloaded, unzip it. The [upload](#upload-exported-dependencies-to-nexus-repository-upload) command can be used to upload all jmix dependencies artifacts to the repository, e.g.:
-
-```shell
-./deptool upload --nexus-url http://localhost:8081 \
---nexus-repository jmix \
---nexus-username admin \
---nexus-password admin \
---artifacts-dir /opt/dependencies/jmix-dependencies-1.4.2
-```
-
-Nexus repository installation is briefly described in [this section](#install-custom-nexus-repository).
-
-After all artifacts are uploaded to the Nexus repository you should select custom Nexus repository while creating a new Jmix project in IntelliJ Idea. See the [Adopt Projects For Working with Custom Nexus Repository](#adopt-projects-for-working-with-custom-nexus-repository) section.
+- Resolve all Jmix dependencies for the specific version of the framework and its add-ons. If commercial add-ons are needed, this step requires the Enterprise subscription key. Resolve also additional libraries required for the project, if any. On this step, the resolved artifacts will be downloaded to the local Gradle cache.
+- Export the resolved artifacts to the local Maven repository in the portable format.
+- Upload exported artifacts to a custom Nexus repository.
+- Configure the project for using the custom Nexus repository.
 
 ## Dependencies Resolution
 
@@ -135,7 +124,7 @@ Command options:
 * `--nexus-password` (required) - Nexus user password.
 * `--artifacts-dir` (required) - a directory with artifacts to be uploaded to Nexus.
 
-## Adopt Projects For Working with Custom Nexus Repository
+## Configure Projects For Working with Custom Nexus Repository
 
 While creating a new Jmix project in Jmix Studio, add custom Nexus repository.
 
