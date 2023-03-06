@@ -180,6 +180,14 @@
         <!-- Required for Jmix plugin widgetset compilation -->
         <dependency>javax.validation:validation-api:1.0.0.GA</dependency>
         <dependency>ru.finam:slf4j-gwt:1.7.7.1</dependency>
+
+        <!-- Database drivers -->
+        <dependency>org.hsqldb:hsqldb</dependency>
+        <dependency>org.postgresql:postgresql</dependency>
+        <dependency>com.mysql:mysql-connector-j</dependency>
+        <dependency>org.mariadb.jdbc:mariadb-java-client</dependency>
+        <dependency>com.microsoft.sqlserver:mssql-jdbc</dependency>
+        <dependency>com.oracle.database.jdbc:ojdbc8</dependency>
     </open-source-dependencies>
 
     <commercial-dependencies>

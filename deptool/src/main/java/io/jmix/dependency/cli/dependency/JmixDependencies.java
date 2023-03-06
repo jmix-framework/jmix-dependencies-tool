@@ -14,15 +14,6 @@ public class JmixDependencies {
 
     private static final Logger log = LoggerFactory.getLogger(JmixDependencies.class);
 
-    private static final List<String> DATABASE_DRIVER_DEPENDENCIES = List.of(
-            "org.hsqldb:hsqldb",
-            "org.postgresql:postgresql",
-            "mysql:mysql-connector-java",
-            "org.mariadb.jdbc:mariadb-java-client",
-            "com.microsoft.sqlserver:mssql-jdbc",
-            "com.oracle.database.jdbc:ojdbc8"
-    );
-
     public static Set<String> getVersionSpecificJmixDependencies(String jmixVersion, boolean resolveCommercialAddons) {
         String minorJmixVersion = getMinorVersion(jmixVersion);
         Set<String> dependencies = _getVersionSpecificDependencies(minorJmixVersion, resolveCommercialAddons);
@@ -62,10 +53,6 @@ public class JmixDependencies {
         } catch (DocumentException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static List<String> getDatabaseDriverDependencies() {
-        return DATABASE_DRIVER_DEPENDENCIES;
     }
 
     /**

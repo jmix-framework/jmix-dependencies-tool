@@ -57,7 +57,6 @@ public class ResolveJmixCommand implements BaseCommand {
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
             List<String> dependencies = new ArrayList<>();
             dependencies.addAll(JmixDependencies.getVersionSpecificJmixDependencies(jmixVersion, resolveCommercialAddons));
-            dependencies.addAll(JmixDependencies.getDatabaseDriverDependencies());
             dependencies.sort(Comparator.naturalOrder());
             for (String dependency : dependencies) {
                 log.info("Resolving dependency: {}", dependency);
