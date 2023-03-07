@@ -9,7 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.LinkedHashSet;
+import java.util.TreeSet;
 
 @Parameters(commandDescription = "Exports resolved dependencies")
 public class ExportCommand implements BaseCommand {
@@ -37,7 +37,7 @@ public class ExportCommand implements BaseCommand {
         log.info("Target directory: {}", Paths.get(targetDirectory).toAbsolutePath().normalize());
         log.info("Gradle user home directory: {}", Paths.get(gradleUserHome).toAbsolutePath().normalize());
 
-        LinkedHashSet<String> exportedDependencies = new LinkedHashSet<>();
+        TreeSet<String> exportedDependencies = new TreeSet<>();
 
         if (reportFile != null) {
             log.info("Path to the report file: {}", Paths.get(reportFile).toAbsolutePath().normalize());
@@ -86,25 +86,26 @@ public class ExportCommand implements BaseCommand {
                     return FileVisitResult.CONTINUE;
                 }
             });
-
-            if (!exportedDependencies.isEmpty()) {
-                try {
-                    Files.deleteIfExists(Paths.get(reportFile));
-                } catch (IOException e) {
-                    throw new RuntimeException("Error while creating the report file", e);
-                }
-
-                try (FileWriter fileWriter = new FileWriter(reportFile, true)) {
-                    for (String exportedDependency : exportedDependencies) {
-                        fileWriter.append(exportedDependency);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("Error while writing the report file", e);
-                }
-            }
         } catch (IOException e) {
             throw new RuntimeException("Error on copying files from gradle caches", e);
         }
+
+        if (!exportedDependencies.isEmpty()) {
+            try {
+                Files.deleteIfExists(Paths.get(reportFile));
+            } catch (IOException e) {
+                throw new RuntimeException("Error while deleting the report file", e);
+            }
+
+            try (FileWriter fileWriter = new FileWriter(reportFile, true)) {
+                for (String exportedDependency : exportedDependencies) {
+                    fileWriter.append(exportedDependency);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Error while writing the report file", e);
+            }
+        }
+
         log.info("Export completed successfully");
     }
 }
