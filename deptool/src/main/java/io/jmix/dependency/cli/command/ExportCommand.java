@@ -94,7 +94,7 @@ public class ExportCommand implements BaseCommand {
             try {
                 Files.deleteIfExists(Paths.get(reportFile));
             } catch (IOException e) {
-                throw new RuntimeException("Error while deleting the report file", e);
+                throw new RuntimeException("Error while deleting an existing report file", e);
             }
 
             try (FileWriter fileWriter = new FileWriter(reportFile, true)) {
