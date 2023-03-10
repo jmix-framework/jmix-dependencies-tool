@@ -103,6 +103,7 @@ Command options:
 
 * `--target-dir` - a directory where dependencies artifacts will be exported to (`../export` by default).
 * `--gradle-user-home` - gradle home directory with resolved dependencies. See `resolve-jmix` command documentation.
+* `--report-file` - a path to a file which will contain a list of all exported artifacts. 
 
 ## Upload Exported Dependencies to Nexus Repository (upload)
 
