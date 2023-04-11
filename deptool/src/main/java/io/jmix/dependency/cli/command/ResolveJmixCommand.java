@@ -92,6 +92,22 @@ public class ResolveJmixCommand implements BaseCommand {
                     log.debug(result);
                 }
             }
+
+            //some dependencies may include BOM files that affect other dependencies, e.g. elasticsearch includes the
+            //newer version of jackson-databind that depends on com.fasterxml.jackson:jackson-bom that in turn may raise
+            //versions of all jackson libraries. That's why we do a final resolution when all dependencies
+            //from dependencies-X.Y.Z.xml file are passed to the build.gradle
+            List<String> taskArguments = new ArrayList<>();
+            for (String dependency : dependencies) {
+                taskArguments.add("--dependency");
+                taskArguments.add(dependency);
+            }
+            taskArguments.add("-PjmixVersion=" + jmixVersion);
+            taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
+            String result = jmixGradleClient.runTask(connection,
+                    "resolveDependencies",
+                    taskArguments);
+            log.debug(result);
         }
         log.info("Resolving Jmix dependencies completed successfully");
     }
