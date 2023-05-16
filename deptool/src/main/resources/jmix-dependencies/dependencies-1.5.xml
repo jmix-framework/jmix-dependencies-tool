@@ -152,6 +152,7 @@
         <dependency>io.jmix.translations:jmix-translations-el</dependency>
         <dependency>io.jmix.translations:jmix-translations-ckb</dependency>
         <dependency>io.jmix.translations:jmix-translations-nl</dependency>
+        <dependency>io.jmix.translations:jmix-translations-it</dependency>
 
         <dependency>io.jmix.ui:jmix-ui</dependency>
         <dependency>io.jmix.ui:jmix-ui-data</dependency>
