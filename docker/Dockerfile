@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11
+FROM eclipse-temurin:11-jdk-alpine
 
 ARG JMIX_VERSION=1.5.0
 ARG JMIX_PLUGIN_VERSION=${JMIX_VERSION}
@@ -17,9 +17,9 @@ COPY scripts/* /opt/deptool-scripts/
 RUN mkdir $DEPTOOL_DIR
 
 RUN wget https://github.com/jmix-framework/jmix-dependencies-tool/releases/download/$DEPTOOL_VERSION/deptool-$DEPTOOL_VERSION.zip -q -O $DEPTOOL_DIR/deptool.zip \
-    && apt update \
-    && apt install -y zip \
-    && apt install -y unzip \
+    && apk update \
+    && apk add zip \
+    && apk add unzip \
     && unzip -q $DEPTOOL_DIR/deptool.zip -d $DEPTOOL_DIR \
     && rm $DEPTOOL_DIR/deptool.zip \
     && chmod +x /opt/deptool-scripts/*.sh
