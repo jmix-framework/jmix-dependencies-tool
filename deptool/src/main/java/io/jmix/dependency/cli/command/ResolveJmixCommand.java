@@ -104,6 +104,9 @@ public class ResolveJmixCommand implements BaseCommand {
             }
             taskArguments.add("-PjmixVersion=" + jmixVersion);
             taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
+            if (jmixLicenseKey != null) {
+                taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
+            }
             String result = jmixGradleClient.runTask(connection,
                     "resolveDependencies",
                     taskArguments);
