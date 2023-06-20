@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<dependencies>
+
+    <open-source-dependencies>
+        <dependency>io.jmix.templates.studio:jmix-studio-templates:1.1.3</dependency>
+    </open-source-dependencies>
+
+    <commercial-dependencies>
+    </commercial-dependencies>
+</dependencies>
