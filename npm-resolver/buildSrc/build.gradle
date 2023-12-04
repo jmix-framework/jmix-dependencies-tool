@@ -1,0 +1,20 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation gradleApi()
+}
+
+//gradlePlugin {
+//    plugins {
+//        simplePlugin {
+//            id = 'io.jmix.dependencies'
+//            implementationClass = 'io.jmix.dependencies.JmixNpmDependenciesPlugin'
+//        }
+//    }
+//}

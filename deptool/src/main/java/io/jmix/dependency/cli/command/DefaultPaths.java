@@ -12,8 +12,15 @@ public class DefaultPaths {
         return Paths.get(System.getProperty("user.dir")).resolve("../resolver").toAbsolutePath().toString();
     }
 
+    public static String getDefaultNpmResolverProjectPath() {
+        return Paths.get(System.getProperty("user.dir")).resolve("../npm-resolver").toAbsolutePath().toString();
+    }
+
     public static String getDefaultExportDir() {
         return Paths.get(System.getProperty("user.dir")).resolve("../export").toAbsolutePath().toString();
     }
 
+    public static String getDefaultExportNpmDir() {
+        return Paths.get(System.getProperty("user.dir")).resolve("../export-npm").toAbsolutePath().toString();
+    }
 }
