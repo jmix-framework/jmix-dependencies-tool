@@ -4,19 +4,22 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import io.jmix.dependency.cli.dependency.JmixDependencies;
 import io.jmix.dependency.cli.gradle.JmixGradleClient;
+import org.apache.commons.io.FileUtils;
 import org.gradle.tooling.ProjectConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Parameters(commandDescription = "Resolves Jmix dependencies")
-public class ResolveJmixCommand implements BaseCommand {
+@Parameters(commandDescription = "Resolves Npm dependencies")
+public class ResolveNpmCommand implements BaseCommand {
 
-    private static final Logger log = LoggerFactory.getLogger(ResolveJmixCommand.class);
+    private static final Logger log = LoggerFactory.getLogger(ResolveNpmCommand.class);
 
     @Parameter(names = {"--jmix-version"}, description = "Jmix version", required = true, order = 0)
     private String jmixVersion;
@@ -46,60 +49,59 @@ public class ResolveJmixCommand implements BaseCommand {
             jmixPluginVersion = jmixVersion;
         }
         if (resolverProjectPath == null) {
-            resolverProjectPath = DefaultPaths.getDefaultResolverProjectPath();
+            resolverProjectPath = DefaultPaths.getDefaultNpmResolverProjectPath();
         }
         if (gradleUserHome == null) {
             gradleUserHome = DefaultPaths.getDefaultGradleUserHome();
         }
+
         log.info("Jmix version: {}", jmixVersion);
         log.info("Jmix plugin version: {}", jmixPluginVersion);
         log.info("Resolver project path: {}", Paths.get(resolverProjectPath).toAbsolutePath().normalize());
         log.info("Gradle user home directory: {}", Paths.get(gradleUserHome).toAbsolutePath().normalize());
 
         JmixGradleClient jmixGradleClient = new JmixGradleClient(resolverProjectPath, gradleUserHome, gradleVersion);
+
+        vaadinClean(jmixGradleClient);
+        copyStubPackageLock();
+        resolveDependencies(jmixGradleClient);
+    }
+
+    protected void vaadinClean(JmixGradleClient jmixGradleClient) {
+        log.info("Vaadin clean...");
+
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
-            List<String> dependencies = new ArrayList<>();
-            dependencies.addAll(JmixDependencies.getVersionSpecificJmixDependencies(jmixVersion, resolveCommercialAddons));
-            dependencies.sort(Comparator.naturalOrder());
-            for (String dependency : dependencies) {
-                log.info("Resolving dependency: {}", dependency);
-                List<String> taskArguments = new ArrayList<>(List.of(
-                        "--dependency", dependency));
-                if (jmixLicenseKey != null) {
-                    taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
-                }
-
-                long colonCount = dependency.chars().filter(ch -> ch == ':').count();
-                if (colonCount == 2) {
-                    //if dependency in the dependencies file is defined with an explicit version then we resolve it
-                    //twice: using Jmix BOM and without it
-                    String result = jmixGradleClient.runTask(connection,
-                            "resolveDependencies",
-                            taskArguments);
-                    log.debug(result);
-
-                    taskArguments.add("-PjmixVersion=" + jmixVersion);
-                    taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
-                    result = jmixGradleClient.runTask(connection,
-                            "resolveDependencies",
-                            taskArguments);
-                    log.debug(result);
-                } else {
-                    //if dependency in the dependencies file is defined without an explicit version then we resolve it
-                    //using Jmix BOM
-                    taskArguments.add("-PjmixVersion=" + jmixVersion);
-                    taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
-                    String result = jmixGradleClient.runTask(connection,
-                            "resolveDependencies",
-                            taskArguments);
-                    log.debug(result);
-                }
+            List<String> taskArguments = new ArrayList<>();
+            taskArguments.add("-PjmixVersion=" + jmixVersion);
+            taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
+            if (jmixLicenseKey != null) {
+                taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
             }
+            String result = jmixGradleClient.runTask(connection,
+                    "vaadinClean",
+                    taskArguments);
+            log.info(result);
+        }
+    }
 
-            //some dependencies may include BOM files that affect other dependencies, e.g. elasticsearch includes the
-            //newer version of jackson-databind that depends on com.fasterxml.jackson:jackson-bom that in turn may raise
-            //versions of all jackson libraries. That's why we do a final resolution when all dependencies
-            //from dependencies-X.Y.Z.xml file are passed to the build.gradle
+    protected void copyStubPackageLock() {
+        log.info("-= Copy stub package-lock.json =-");
+        File source = new File(resolverProjectPath + "/stub/package-lock.json");
+        File targetDirectory = new File(resolverProjectPath);
+        try {
+            FileUtils.copyFileToDirectory(source, targetDirectory);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to copy stub package-lock.json", e);
+        }
+    }
+
+    protected void resolveDependencies(JmixGradleClient jmixGradleClient) {
+        log.info("-= Resolve dependencies =-");
+        try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
+            List<String> dependencies = new ArrayList<>(JmixDependencies.getVersionSpecificJmixDependencies(jmixVersion, resolveCommercialAddons));
+            dependencies.sort(Comparator.naturalOrder());
+
+            log.info("Resolve...");
             List<String> taskArguments = new ArrayList<>();
             for (String dependency : dependencies) {
                 taskArguments.add("--dependency");
@@ -111,10 +113,9 @@ public class ResolveJmixCommand implements BaseCommand {
                 taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
             }
             String result = jmixGradleClient.runTask(connection,
-                    "resolveDependencies",
+                    "resolveNpmDependencies",
                     taskArguments);
-            log.debug(result);
+            log.info(result);
         }
-        log.info("Resolving Jmix dependencies completed successfully");
     }
 }

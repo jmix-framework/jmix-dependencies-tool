@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<dependencies>
+
+    <open-source-dependencies>
+        <!-- Jmix modules -->
+        <dependency>io.jmix.appsettings:jmix-appsettings</dependency>
+        <dependency>io.jmix.appsettings:jmix-appsettings-starter</dependency>
+        <dependency>io.jmix.appsettings:jmix-appsettings-flowui</dependency>
+        <dependency>io.jmix.appsettings:jmix-appsettings-flowui-starter</dependency>
+
+        <dependency>io.jmix.audit:jmix-audit</dependency>
+        <dependency>io.jmix.audit:jmix-audit-flowui</dependency>
+        <dependency>io.jmix.audit:jmix-audit-starter</dependency>
+        <dependency>io.jmix.audit:jmix-audit-flowui-starter</dependency>
+
+        <dependency>io.jmix.authserver:jmix-authserver</dependency>
+        <dependency>io.jmix.authserver:jmix-authserver-starter</dependency>
+
+        <dependency>io.jmix.awsfs:jmix-awsfs</dependency>
+        <dependency>io.jmix.awsfs:jmix-awsfs-starter</dependency>
+
+        <dependency>io.jmix.core:jmix-core</dependency>
+        <dependency>io.jmix.core:jmix-core-starter</dependency>
+
+        <dependency>io.jmix.data:jmix-data</dependency>
+        <dependency>io.jmix.data:jmix-data-autoconfigure</dependency>
+        <dependency>io.jmix.data:jmix-eclipselink</dependency>
+        <dependency>io.jmix.data:jmix-eclipselink-starter</dependency>
+
+        <dependency>io.jmix.dataimport:jmix-dataimport</dependency>
+        <dependency>io.jmix.dataimport:jmix-dataimport-starter</dependency>
+
+        <dependency>io.jmix.datatools:jmix-datatools</dependency>
+        <dependency>io.jmix.datatools:jmix-datatools-starter</dependency>
+        <dependency>io.jmix.datatools:jmix-datatools-flowui</dependency>
+        <dependency>io.jmix.datatools:jmix-datatools-flowui-starter</dependency>
+
+        <dependency>io.jmix.email:jmix-email</dependency>
+        <dependency>io.jmix.email:jmix-email-flowui</dependency>
+        <dependency>io.jmix.email:jmix-email-starter</dependency>
+        <dependency>io.jmix.email:jmix-email-flowui-starter</dependency>
+
+        <dependency>io.jmix.flowui:jmix-flowui</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-starter</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-kit</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-themes</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-data</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-data-starter</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-devserver</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-test-assist</dependency>
+
+        <!-- TODO include?
+        <dependency>io.jmix.gridexport:jmix-gridexport-flowui</dependency>
+        <dependency>io.jmix.gridexport:jmix-gridexport-flowui-starter</dependency>-->
+
+        <dependency>io.jmix.ldap:jmix-ldap</dependency>
+        <dependency>io.jmix.ldap:jmix-ldap-starter</dependency>
+
+        <dependency>io.jmix.localfs:jmix-localfs</dependency>
+        <dependency>io.jmix.localfs:jmix-localfs-starter</dependency>
+
+        <dependency>io.jmix.multitenancy:jmix-multitenancy</dependency>
+        <dependency>io.jmix.multitenancy:jmix-multitenancy-flowui</dependency>
+        <dependency>io.jmix.multitenancy:jmix-multitenancy-starter</dependency>
+        <dependency>io.jmix.multitenancy:jmix-multitenancy-flowui-starter</dependency>
+
+        <dependency>io.jmix.oidc:jmix-oidc</dependency>
+        <dependency>io.jmix.oidc:jmix-oidc-starter</dependency>
+
+        <dependency>io.jmix.quartz:jmix-quartz</dependency>
+        <dependency>io.jmix.quartz:jmix-quartz-starter</dependency>
+        <dependency>io.jmix.quartz:jmix-quartz-flowui</dependency>
+        <dependency>io.jmix.quartz:jmix-quartz-flowui-starter</dependency>
+
+        <dependency>io.jmix.reports:jmix-reports</dependency>
+        <dependency>io.jmix.reports:jmix-reports-flowui</dependency>
+        <dependency>io.jmix.reports:jmix-reports-rest</dependency>
+        <dependency>io.jmix.reports:jmix-reports-starter</dependency>
+        <dependency>io.jmix.reports:jmix-reports-flowui-starter</dependency>
+        <dependency>io.jmix.reports:jmix-reports-rest-starter</dependency>
+
+        <dependency>io.jmix.rest:jmix-rest</dependency>
+        <dependency>io.jmix.rest:jmix-rest-starter</dependency>
+
+        <dependency>io.jmix.security:jmix-security</dependency>
+        <dependency>io.jmix.security:jmix-security-starter</dependency>
+        <dependency>io.jmix.security:jmix-security-data</dependency>
+        <dependency>io.jmix.security:jmix-security-data-starter</dependency>
+        <dependency>io.jmix.security:jmix-security-flowui</dependency>
+        <dependency>io.jmix.security:jmix-security-flowui-starter</dependency>
+
+        <dependency>io.jmix.templates.studio:jmix-studio-templates</dependency>
+
+        <dependency>io.jmix.translations:jmix-translations-fr</dependency>
+        <dependency>io.jmix.translations:jmix-translations-ru</dependency>
+        <dependency>io.jmix.translations:jmix-translations-de</dependency>
+        <dependency>io.jmix.translations:jmix-translations-zh-cn</dependency>
+        <dependency>io.jmix.translations:jmix-translations-ro</dependency>
+        <dependency>io.jmix.translations:jmix-translations-el</dependency>
+        <dependency>io.jmix.translations:jmix-translations-ckb</dependency>
+        <dependency>io.jmix.translations:jmix-translations-nl</dependency>
+
+        <dependency>io.jmix.translations:jmix-translations-fr</dependency>
+        <dependency>io.jmix.translations:jmix-translations-ru</dependency>
+        <dependency>io.jmix.translations:jmix-translations-de</dependency>
+        <dependency>io.jmix.translations:jmix-translations-zh-cn</dependency>
+        <dependency>io.jmix.translations:jmix-translations-ro</dependency>
+        <dependency>io.jmix.translations:jmix-translations-el</dependency>
+        <dependency>io.jmix.translations:jmix-translations-ckb</dependency>
+        <dependency>io.jmix.translations:jmix-translations-nl</dependency>
+        <dependency>io.jmix.translations:jmix-translations-it</dependency>
+
+        <!-- Additional dependencies -->
+
+        <dependency>org.springframework.boot:spring-boot-starter-web</dependency>
+        <dependency>org.springframework.boot:spring-boot-starter-test</dependency>
+
+        <!-- todo Do we still need this -->
+        <dependency>org.yaml:snakeyaml:1.30</dependency>
+        <dependency>com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3</dependency>
+        <dependency>com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3</dependency>
+
+        <!-- Required for Jmix plugin widgetset compilation -->
+        <dependency>javax.validation:validation-api:1.0.0.GA</dependency>
+        <dependency>ru.finam:slf4j-gwt:1.7.7.1</dependency>
+
+        <!--  Database drivers &ndash -->
+        <dependency>org.hsqldb:hsqldb</dependency>
+        <dependency>org.postgresql:postgresql</dependency>
+        <dependency>com.mysql:mysql-connector-j</dependency>
+        <dependency>org.mariadb.jdbc:mariadb-java-client</dependency>
+        <dependency>com.microsoft.sqlserver:mssql-jdbc</dependency>
+        <dependency>com.oracle.database.jdbc:ojdbc8</dependency>
+    </open-source-dependencies>
+
+    <commercial-dependencies>
+        <dependency>io.jmix.bpm:jmix-bpm</dependency>
+        <!--<dependency>io.jmix.bpm:jmix-bpm-modeler</dependency>-->
+        <dependency>io.jmix.bpm:jmix-bpm-starter</dependency>
+        <dependency>io.jmix.bpm:jmix-bpm-flowui</dependency>
+        <dependency>io.jmix.bpm:jmix-bpm-flowui-starter</dependency>
+        <dependency>io.jmix.bpm:jmix-bpm-rest</dependency>
+        <dependency>io.jmix.bpm:jmix-bpm-rest-starter</dependency>
+
+        <dependency>io.jmix.businesscalendar:jmix-businesscalendar</dependency>
+        <dependency>io.jmix.businesscalendar:jmix-businesscalendar-starter</dependency>
+        <dependency>io.jmix.businesscalendar:jmix-businesscalendar-flowui</dependency>
+        <dependency>io.jmix.businesscalendar:jmix-businesscalendar-flowui-starter</dependency>
+
+        <dependency>io.jmix.maps:jmix-maps</dependency>
+        <dependency>io.jmix.maps:jmix-maps-starter</dependency>
+        <dependency>io.jmix.maps:jmix-maps-flowui</dependency>
+        <dependency>io.jmix.maps:jmix-maps-flowui-kit</dependency>
+        <dependency>io.jmix.maps:jmix-maps-flowui-starter</dependency>
+
+        <dependency>io.jmix.notifications:jmix-notifications</dependency>
+        <dependency>io.jmix.notifications:jmix-notifications-starter</dependency>
+        <dependency>io.jmix.notifications:jmix-notifications-flowui</dependency>
+        <dependency>io.jmix.notifications:jmix-notifications-flowui-kit</dependency>
+        <dependency>io.jmix.notifications:jmix-notifications-flowui-starter</dependency>
+
+        <dependency>io.jmix.webdav:jmix-webdav</dependency>
+        <dependency>io.jmix.webdav:jmix-webdav-starter</dependency>
+        <dependency>io.jmix.webdav:jmix-webdav-rest</dependency>
+        <dependency>io.jmix.webdav:jmix-webdav-rest-starter</dependency>
+        <dependency>io.jmix.webdav:jmix-webdav-flowui</dependency>
+        <dependency>io.jmix.webdav:jmix-webdav-flowui-starter</dependency>
+    </commercial-dependencies>
+</dependencies>

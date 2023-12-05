@@ -1,7 +1,7 @@
 def deptoolDir = "deptool-${project.property('version')}"
 
 tasks.register('prepareDist', Copy) {
-    dependsOn tasks.cleanBuild, tasks.copyDeptool, tasks.copyResolver
+    dependsOn tasks.cleanBuild, tasks.copyDeptool, tasks.copyResolver, tasks.copyNpmResolver
 }
 
 tasks.register('zipDist', Zip) {
@@ -22,6 +22,13 @@ tasks.register('copyResolver', Copy) {
         exclude '**/build', '**/.gradle'
     }
     into project.layout.buildDirectory.dir("install/${deptoolDir}/resolver")
+}
+
+tasks.register('copyNpmResolver', Copy) {
+    from (project.layout.projectDirectory.dir('npm-resolver')) {
+        exclude '**/build', '**/.gradle'
+    }
+    into project.layout.buildDirectory.dir("install/${deptoolDir}/npm-resolver")
 }
 
 tasks.register('cleanBuild', Delete) {

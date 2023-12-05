@@ -1,4 +1,5 @@
 rootProject.name = 'jmix-dependencies-tool'
 
 includeBuild 'resolver'
+includeBuild 'npm-resolver'
 includeBuild 'deptool'

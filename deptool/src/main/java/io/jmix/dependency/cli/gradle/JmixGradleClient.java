@@ -3,27 +3,34 @@ package io.jmix.dependency.cli.gradle;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.OutputStream;
 
 public class JmixGradleClient {
 
-    private String projectDir;
+    private final String projectDir;
 
-    private String gradleUserHomeDir;
+    private final String gradleUserHomeDir;
+
+    private final String gradleVersion;
 
     public JmixGradleClient(String projectDir, String gradleUserHomeDir) {
+        this(projectDir, gradleUserHomeDir, null);
+    }
+
+    public JmixGradleClient(String projectDir, String gradleUserHomeDir, String gradleVersion) {
         this.projectDir = projectDir;
         this.gradleUserHomeDir = gradleUserHomeDir;
+        this.gradleVersion = gradleVersion;
     }
 
     public ProjectConnection getProjectConnection() {
-        //todo which gradle distribution to use
-        return GradleConnector.newConnector()
-                .forProjectDirectory(new File(projectDir))
-                .connect();
+        GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(new File(projectDir));
+        if (gradleVersion != null && !gradleVersion.isBlank()) {
+            gradleConnector.useGradleVersion(gradleVersion);
+        }
+
+        return gradleConnector.connect();
     }
 
     public String runTask(ProjectConnection connection, String taskName,

@@ -1,6 +1,10 @@
 package io.jmix.dependency.cli.upload;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import io.jmix.dependency.cli.upload.model.Artifact;
+import io.jmix.dependency.cli.upload.model.ArtifactNpm;
 import io.jmix.dependency.cli.upload.model.ArtifactsBundle;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -18,13 +22,13 @@ public class NexusRepositoryManager {
 
     private static final Logger logger = LoggerFactory.getLogger(NexusRepositoryManager.class);
 
-    private String nexusUrl;
+    private final String nexusUrl;
 
-    private String repositoryName;
+    private final String repositoryName;
 
-    private String username;
+    private final String username;
 
-    private String password;
+    private final String password;
 
     public NexusRepositoryManager(String nexusUrl, String repositoryName, String username, String password) {
         this.nexusUrl = nexusUrl;
@@ -97,6 +101,82 @@ public class NexusRepositoryManager {
             httpPost.setEntity(httpEntity);
 
             logger.info("Uploading artifacts: {}", artifactsBundle);
+
+            httpClient.execute(httpPost, response -> {
+                if (response.getCode() != 204) {
+                    HttpEntity responseEntity = response.getEntity();
+                    logger.info("Response status line: {}", new StatusLine(response));
+                    if (responseEntity != null) {
+                        String responseText = EntityUtils.toString(responseEntity);
+                        logger.info("Response body: {}", responseText);
+                    }
+                    EntityUtils.consume(responseEntity);
+                }
+                return null;
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Error on uploading artifact", e);
+        }
+    }
+
+    /**
+     * Checks whether an NPM artifact is uploaded to Nexus repository
+     */
+    public boolean isNpmArtifactUploaded(ArtifactNpm artifact) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            String artifactUrl = this.nexusUrl + "/service/rest/v1/search/assets?"
+                    + "repository=" + repositoryName
+                    + "&name=" + artifact.getModuleName()
+                    + "&version=" + artifact.getVersion();
+            logger.info("Search artifact Url={}", artifactUrl);
+
+
+            HttpGet httpGet = new HttpGet(artifactUrl);
+            return httpClient.execute(httpGet, response -> {
+                logger.info("Check artifact response: {}", response.getCode());
+                HttpEntity responseEntity = response.getEntity();
+                try {
+                    if (responseEntity != null) {
+                        String responseString = EntityUtils.toString(responseEntity);
+                        JsonObject jsonResp = new Gson().fromJson(responseString, JsonObject.class);
+                        if (jsonResp.has("items") && jsonResp.get("items").isJsonArray()) {
+                            JsonArray items = jsonResp.getAsJsonArray("items");
+                            return !items.isEmpty();
+                        }
+                    }
+                    return false;
+                } catch (Exception e) {
+                    throw new RuntimeException("Error on checking that artifact is uploaded", e);
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Error on checking that artifact is uploaded", e);
+        }
+    }
+
+    /**
+     * Uploads NPM artifact to the Nexus repository.
+     * <p>
+     * See <a href="https://help.sonatype.com/repomanager3/integrations/rest-and-integration-api/components-api">Nexus
+     * Components API</a>
+     *
+     * @param artifact artifact
+     */
+    public void uploadNpmArtifacts(ArtifactNpm artifact) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create();
+            multipartEntityBuilder.addBinaryBody("npm.asset", artifact.getFile());
+
+            HttpEntity httpEntity = multipartEntityBuilder.build();
+
+            String uploadUrl = nexusUrl + "/service/rest/v1/components?repository=" + repositoryName;
+            HttpPost httpPost = new HttpPost(uploadUrl);
+            String credentials = username + ":" + password;
+            byte[] encodedCredentialsBytes = Base64.encodeBase64(credentials.getBytes());
+            httpPost.addHeader("Authorization", "Basic " + new String(encodedCredentialsBytes));
+            httpPost.setEntity(httpEntity);
+
+            logger.info("Uploading artifact: {}", artifact);
 
             httpClient.execute(httpPost, response -> {
                 if (response.getCode() != 204) {

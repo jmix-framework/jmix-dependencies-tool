@@ -16,28 +16,31 @@ public class ResolveLibCommand implements BaseCommand {
 
     private static final Logger log = LoggerFactory.getLogger(ResolveLibCommand.class);
 
-    @Parameter(description = "Dependency to resolve")
+    @Parameter(description = "Dependency to resolve", order = 0)
     private String dependency;
 
-    @Parameter(names = {"--jmix-version"}, description = "Jmix version")
+    @Parameter(names = {"--jmix-version"}, description = "Jmix version", order = 2)
     private String jmixVersion;
 
-    @Parameter(names = {"--jmix-plugin-version"}, description = "Jmix plugin version")
+    @Parameter(names = {"--jmix-plugin-version"}, description = "Jmix plugin version", order = 3)
     private String jmixPluginVersion;
 
-    @Parameter(names = {"--gradle-user-home"}, description = "Gradle user home dir for resolver project")
+    @Parameter(names = {"--gradle-user-home"}, description = "Gradle user home dir for resolver project", order = 4)
     private String gradleUserHome;
 
-    @Parameter(names = {"--resolver-project"}, description = "Path to dependencies resolver project")
+    @Parameter(names = {"--resolver-project"}, description = "Path to dependencies resolver project", order = 5)
     private String resolverProjectPath;
 
-    @Parameter(names = {"--jmix-license-key"}, description = "Jmix license key (required if the project uses commercial add-ons", order = 4)
+    @Parameter(names = {"--jmix-license-key"}, description = "Jmix license key (required if the project uses commercial add-ons", order = 6)
     private String jmixLicenseKey;
 
     @Parameter(names = {"--repository"}, description = "Additional Maven repository for dependencies resolution. The format is " +
             "the following: <url>|<username>|<password>, e.g. http://localhost:8081/jmix|admin|admin. " +
-            "If credentials are not required then just an URL must be passed", order = 5)
+            "If credentials are not required then just an URL must be passed", order = 7)
     private List<String> repositories;
+
+    @Parameter(names = {"--gradle-version"}, description = "What version of Gradle installation will be used", order = 8)
+    private String gradleVersion;
 
     @Override
     public void run() {
@@ -56,7 +59,7 @@ public class ResolveLibCommand implements BaseCommand {
         log.info("Gradle user home directory: {}", Paths.get(gradleUserHome).toAbsolutePath().normalize());
         log.info("Dependency: {}", dependency);
 
-        JmixGradleClient jmixGradleClient = new JmixGradleClient(resolverProjectPath, gradleUserHome);
+        JmixGradleClient jmixGradleClient = new JmixGradleClient(resolverProjectPath, gradleUserHome, gradleVersion);
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
             log.info("Resolving dependency: {}", dependency);
             List<String> taskArguments = new ArrayList<>(List.of(
