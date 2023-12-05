@@ -2,6 +2,7 @@ package io.jmix.dependency.cli.command;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,10 +45,11 @@ public class ExportNpmCommand implements BaseCommand {
         Path packageLockJsonPath = Paths.get(packageLockJson).toAbsolutePath().normalize();
 
         log.info("Target directory: {}", targetDirectoryPath);
-        log.info("Dependencies file: {}", packageLockJsonPath);
+        log.info("package-lock.json file: {}", packageLockJsonPath);
 
         installNodeTgzDownloader();
         downloadNpmArchives(packageLockJsonPath.toString(), targetDirectoryPath.toString());
+        copyPackageLock();
 
         log.info("Export completed successfully");
     }
@@ -61,6 +63,17 @@ public class ExportNpmCommand implements BaseCommand {
         log.info("-= Download tgz-archives =-");
         String command = "npx download-tgz package-lock " + packageLockFileLocation + " --directory=" + directory;
         executeCommand(downloaderDir, command);
+    }
+
+    protected void copyPackageLock() {
+        log.info("-= Copy package-lock.json =-");
+        File source = new File(packageLockJson);
+        File target = new File(targetDirectory);
+        try {
+            FileUtils.copyFileToDirectory(source, target);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to copy package-lock.json", e);
+        }
     }
 
     protected void executeCommand(String workingDirectory, String command) {

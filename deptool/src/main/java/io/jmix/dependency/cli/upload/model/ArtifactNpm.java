@@ -25,21 +25,21 @@ public class ArtifactNpm {
     }
 
     public static ArtifactNpm createFromPackage(File packageFile) {
-        log.info("Create artifact from package file: {}", packageFile);
+        log.debug("Create artifact from package file: {}", packageFile);
         String packageFileName = packageFile.getName();
 
         File parentDirectory = packageFile.getParentFile();
         if (parentDirectory == null) {
             throw new RuntimeException("Package file doesn't have parent directory");
         }
-        String moduleName = parentDirectory.getName(); //name of the parent directory is the name of module
+        String moduleName = parentDirectory.getName(); //name of the parent directory is the name of the module
 
         int extensionDelimiterIndex = packageFileName.lastIndexOf(".");
         String packageNameNoExtension = packageFileName.substring(0, extensionDelimiterIndex);
 
         // skip one more character - delimiter '-' between module name and version
         String version = packageNameNoExtension.substring(moduleName.length() + 1);
-        log.info("Package={}, Module={}, Version={}", packageFileName, moduleName, version);
+        log.debug("Package={}, Module={}, Version={}", packageFileName, moduleName, version);
         return new ArtifactNpm(moduleName, version, packageFileName, packageFile);
     }
 

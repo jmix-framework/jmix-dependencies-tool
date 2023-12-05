@@ -49,10 +49,10 @@ public class ResolveNpmDependenciesTask extends DefaultTask {
     }
 
     private void addExternalDependencies() {
-        System.out.println("Start 'addDependencies'");
+        Logger logger = getLogger();
         Project project = getProject();
         if (externalDependencies != null) {
-            System.out.println("Dependencies: " + externalDependencies);
+            logger.info("Dependencies: {}", externalDependencies);
             String configurationName = dependencyConfiguration != null ? dependencyConfiguration : "implementation";
             if (project.getConfigurations().findByName(configurationName) == null) {
                 project.getConfigurations().create(configurationName);
@@ -61,7 +61,6 @@ public class ResolveNpmDependenciesTask extends DefaultTask {
                 project.getDependencies().add(configurationName, dependency);
             });
         }
-        System.out.println("Finish 'addDependencies'");
     }
 
     private void addRepositories() {
