@@ -18,3 +18,21 @@ if [ -n "$JMIX_LICENSE_KEY" ]; then
   cd ../export
   zip -rq ${DEPTOOL_EXPORT_DIR}/jmix-commercial-dependencies-${JMIX_VERSION}.zip . *
 fi
+
+cd ../bin
+
+if ! [[ "$version1" = "1."* ]] ; then
+	if [ -n "$JMIX_LICENSE_KEY" ] ; then
+	  echo "Resolve npm (with commercial addons)"
+    ./deptool resolve-npm --jmix-version ${JMIX_VERSION} \
+      --jmix-plugin-version ${JMIX_PLUGIN_VERSION} \
+      --resolve-commercial-addons \
+      --jmix-license-key ${JMIX_LICENSE_KEY}
+  else
+    echo "Resolve npm (without commercial addons)"
+    ./deptool resolve-npm --jmix-version ${JMIX_VERSION} --jmix-plugin-version ${JMIX_PLUGIN_VERSION}
+  fi
+  ./deptool export-npm
+  cd ../export-npm
+  zip -rq ${DEPTOOL_EXPORT_DIR}/jmix-npm-dependencies-${JMIX_VERSION}.zip . *
+fi

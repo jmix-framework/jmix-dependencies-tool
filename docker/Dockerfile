@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11-jdk-alpine
+FROM eclipse-temurin:17-jdk-alpine
 
 ARG JMIX_VERSION=1.5.0
 ARG JMIX_PLUGIN_VERSION=${JMIX_VERSION}
@@ -23,5 +23,9 @@ RUN wget https://github.com/jmix-framework/jmix-dependencies-tool/releases/downl
     && unzip -q $DEPTOOL_DIR/deptool.zip -d $DEPTOOL_DIR \
     && rm $DEPTOOL_DIR/deptool.zip \
     && chmod +x /opt/deptool-scripts/*.sh
+
+RUN chmod +x ${DEPTOOL_DIR}/deptool-${DEPTOOL_VERSION}/bin/deptool
+
+RUN apk add --update nodejs-current npm
 
 CMD ["sh", "-c", "/opt/deptool-scripts/entrypoint.sh"]
