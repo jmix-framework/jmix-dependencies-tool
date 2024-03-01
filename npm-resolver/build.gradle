@@ -17,7 +17,7 @@ if (project.hasProperty('jmixPluginVersion')) {
     apply plugin: 'com.vaadin'
 
     String jmixPluginVersion = project.findProperty('jmixPluginVersion')
-    if (jmixPluginVersion.startsWith("2.1")) {
+    if (!jmixPluginVersion.startsWith("2.0")) {
         println("Disable optimizeBundle")
         vaadin {
             optimizeBundle = false
