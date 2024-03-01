@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -85,10 +86,17 @@ public class ExportNpmCommand implements BaseCommand {
             builder.command("sh", "-c", command);
         }
 
-        File workingDirectoryFile = Paths.get(workingDirectory).toAbsolutePath().normalize().toFile();
+        Path workingDirectoryPath = Paths.get(workingDirectory);
         String commandString = String.join(" ", builder.command());
-        log.info("Working directory: {}, command: {}", workingDirectoryFile, commandString);
-
+        log.info("Working directory: {}, command: {}", workingDirectoryPath, commandString);
+        if (!Files.exists(workingDirectoryPath)) {
+            try {
+                Files.createDirectories(workingDirectoryPath);
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot create working directory " + workingDirectoryPath, e);
+            }
+        }
+        File workingDirectoryFile = workingDirectoryPath.toAbsolutePath().normalize().toFile();
         builder.directory(workingDirectoryFile);
 
         builder.inheritIO();
