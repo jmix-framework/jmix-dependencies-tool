@@ -96,6 +96,8 @@ public class UploadCommand implements BaseCommand {
 
     private String extractClassifier(Path path) {
         String fileName = path.getFileName().toString();
-        return  (fileName.endsWith("-sources.jar"))  ? "sources" : null;
+        if (fileName.endsWith("-sources.jar")) return "sources";
+        if (fileName.endsWith("-linux-x86_64.jar")) return "linux-x86_64";
+        return null;
     }
 }
