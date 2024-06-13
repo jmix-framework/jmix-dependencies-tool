@@ -316,6 +316,8 @@ Task configure project using provided data, resolve java dependencies and use Va
 
 ## Building the Distribution
 
+If you build the official release, use Java 11 for this. 
+
 To build the distribution locally run the following command to build the `deptool` tool distribution:
 
 ```shell
