@@ -21,7 +21,7 @@ fi
 
 cd ../bin
 
-if ! [[ "$version1" = "1."* ]] ; then
+if ! [[ "$JMIX_VERSION" = "1."* ]] ; then
 	if [ -n "$JMIX_LICENSE_KEY" ] ; then
 	  echo "Resolve npm (with commercial addons)"
     ./deptool resolve-npm --jmix-version ${JMIX_VERSION} \
