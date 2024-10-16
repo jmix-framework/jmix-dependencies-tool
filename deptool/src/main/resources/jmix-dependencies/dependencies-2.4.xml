@@ -151,6 +151,7 @@
         <dependency>io.jmix.translations:jmix-translations-fr</dependency>
         <dependency>io.jmix.translations:jmix-translations-it</dependency>
         <dependency>io.jmix.translations:jmix-translations-nl</dependency>
+        <dependency>io.jmix.translations:jmix-translations-pt-br</dependency>
         <dependency>io.jmix.translations:jmix-translations-ro</dependency>
         <dependency>io.jmix.translations:jmix-translations-ru</dependency>
         <dependency>io.jmix.translations:jmix-translations-tr</dependency>
