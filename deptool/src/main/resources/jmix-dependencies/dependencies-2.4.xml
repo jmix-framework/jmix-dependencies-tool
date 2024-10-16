@@ -65,6 +65,10 @@
         <dependency>io.jmix.flowui:jmix-flowui-devserver</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-test-assist</dependency>
 
+        <dependency>io.jmix.fullcalendar:jmix-fullcalendar-flowui</dependency>
+        <dependency>io.jmix.fullcalendar:jmix-fullcalendar-flowui-kit</dependency>
+        <dependency>io.jmix.fullcalendar:jmix-fullcalendar-flowui-starter</dependency>
+
         <!-- Issue with resolving of jmix-gridexport-flowui -> resolve from starter-->
         <!--<dependency>io.jmix.gridexport:jmix-gridexport-flowui</dependency>-->
         <dependency>io.jmix.gridexport:jmix-gridexport-flowui-starter</dependency>
@@ -91,6 +95,10 @@
         <dependency>io.jmix.pessimisticlock:jmix-pessimisticlock-flowui</dependency>
         <dependency>io.jmix.pessimisticlock:jmix-pessimisticlock-flowui-starter</dependency>
 
+        <dependency>io.jmix.pivottable:jmix-pivottable-flowui</dependency>
+        <dependency>io.jmix.pivottable:jmix-pivottable-flowui-kit</dependency>
+        <dependency>io.jmix.pivottable:jmix-pivottable-flowui-starter</dependency>
+
         <dependency>io.jmix.quartz:jmix-quartz</dependency>
         <dependency>io.jmix.quartz:jmix-quartz-starter</dependency>
         <dependency>io.jmix.quartz:jmix-quartz-flowui</dependency>
@@ -105,6 +113,9 @@
 
         <dependency>io.jmix.rest:jmix-rest</dependency>
         <dependency>io.jmix.rest:jmix-rest-starter</dependency>
+
+        <dependency>io.jmix.restds:jmix-restds</dependency>
+        <dependency>io.jmix.restds:jmix-restds-starter</dependency>
 
         <dependency>io.jmix.search:jmix-search</dependency>
         <dependency>io.jmix.search:jmix-search-starter</dependency>
@@ -170,6 +181,10 @@
         <dependency>io.jmix.businesscalendar:jmix-businesscalendar-flowui</dependency>
         <dependency>io.jmix.businesscalendar:jmix-businesscalendar-flowui-starter</dependency>
 
+        <dependency>io.jmix.kanban:jmix-kanban-flowui</dependency>
+        <dependency>io.jmix.kanban:jmix-kanban-flowui-kit</dependency>
+        <dependency>io.jmix.kanban:jmix-kanban-flowui-starter</dependency>
+
         <dependency>io.jmix.maps:jmix-maps</dependency>
         <dependency>io.jmix.maps:jmix-maps-starter</dependency>
         <dependency>io.jmix.maps:jmix-maps-flowui</dependency>
@@ -181,6 +196,9 @@
         <dependency>io.jmix.notifications:jmix-notifications-flowui</dependency>
         <dependency>io.jmix.notifications:jmix-notifications-flowui-kit</dependency>
         <dependency>io.jmix.notifications:jmix-notifications-flowui-starter</dependency>
+
+        <dependency>io.jmix.uiconstraints:jmix-uiconstraints</dependency>
+        <dependency>io.jmix.uiconstraints:jmix-uiconstraints-starter</dependency>
 
         <dependency>io.jmix.webdav:jmix-webdav</dependency>
         <dependency>io.jmix.webdav:jmix-webdav-starter</dependency>
