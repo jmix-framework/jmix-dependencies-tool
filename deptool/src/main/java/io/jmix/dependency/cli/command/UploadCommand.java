@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameters;
 import io.jmix.dependency.cli.upload.NexusRepositoryManager;
 import io.jmix.dependency.cli.upload.model.Artifact;
 import io.jmix.dependency.cli.upload.model.ArtifactsBundle;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public class UploadCommand implements BaseCommand {
                     String mavenCoordinates = groupId + ":" + artifactId + ":" + version;
                     ArtifactsBundle artifactsBundle = artifactBundles.computeIfAbsent(mavenCoordinates,
                             (key) -> new ArtifactsBundle(groupId, artifactId, version));
-                    Artifact artifact = new Artifact(groupId, artifactId, version, extractClassifier(file), file.toFile());
+                    Artifact artifact = new Artifact(groupId, artifactId, version, extractClassifier(file, artifactId, version), file.toFile());
                     artifactsBundle.addArtifact(artifact);
                     return FileVisitResult.CONTINUE;
                 }
@@ -94,10 +95,13 @@ public class UploadCommand implements BaseCommand {
         return fileName.endsWith(".pom") || fileName.endsWith(".jar") || fileName.endsWith(".module");
     }
 
-    private String extractClassifier(Path path) {
+    private String extractClassifier(Path path, String artifactId, String version) {
         String fileName = path.getFileName().toString();
-        if (fileName.endsWith("-sources.jar")) return "sources";
-        if (fileName.endsWith("-linux-x86_64.jar")) return "linux-x86_64";
-        return null;
+        String fileNameNoExt = FilenameUtils.removeExtension(fileName);
+
+        String prefix = artifactId + "-" + version + "-";
+        return fileNameNoExt.startsWith(prefix)
+                ? fileNameNoExt.substring(prefix.length())
+                : null;
     }
 }
