@@ -7,6 +7,7 @@ buildscript {
     if (project.hasProperty('jmixPluginVersion')) {
         dependencies {
             classpath "io.jmix.gradle:jmix-gradle-plugin:${project.findProperty('jmixPluginVersion') ?: version}"
+            classpath "gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext:1.1.9"
         }
     }
 }
