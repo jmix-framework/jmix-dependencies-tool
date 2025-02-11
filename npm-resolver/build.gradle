@@ -11,6 +11,7 @@ buildscript {
     }
 }
 
+apply plugin: 'java'
 if (project.hasProperty('jmixPluginVersion')) {
     apply plugin: 'io.jmix'
     apply plugin: 'org.springframework.boot'
@@ -25,7 +26,6 @@ if (project.hasProperty('jmixPluginVersion')) {
     }
 }
 
-apply plugin: 'java'
 apply plugin: JmixNpmDependenciesPlugin
 
 
