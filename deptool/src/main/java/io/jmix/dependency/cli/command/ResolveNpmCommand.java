@@ -43,6 +43,11 @@ public class ResolveNpmCommand implements BaseCommand {
     @Parameter(names = {"--gradle-version"}, description = "What version of Gradle installation will be used", order = 6)
     private String gradleVersion;
 
+    @Parameter(names = {"--repository"}, description = "Additional Maven repository for dependencies resolution. The format is " +
+            "the following: <url>|<username>|<password>, e.g. http://localhost:8081/jmix|admin|admin. " +
+            "If credentials are not required then just an URL must be passed", order = 7)
+    private List<String> repositories;
+
     @Override
     public void run() {
         if (jmixPluginVersion == null) {
@@ -111,6 +116,12 @@ public class ResolveNpmCommand implements BaseCommand {
             taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
             if (jmixLicenseKey != null) {
                 taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
+            }
+            if (repositories != null) {
+                for (String repository : repositories) {
+                    taskArguments.add("--repository");
+                    taskArguments.add(repository);
+                }
             }
             String result = jmixGradleClient.runTask(connection,
                     "resolveNpmDependencies",
