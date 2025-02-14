@@ -25,10 +25,7 @@ if (project.hasProperty('jmixPluginVersion')) {
         }
     }
 }
-
 apply plugin: JmixNpmDependenciesPlugin
-
-
 
 if (project.hasProperty('jmixVersion')) {
     jmix {
@@ -37,19 +34,47 @@ if (project.hasProperty('jmixVersion')) {
 }
 
 repositories {
+    def publicRepoUrl = project.findProperty('jmixPublicRepository') ?: 'https://global.repo.jmix.io/repository/public'
+
     mavenCentral()
     maven {
-        url 'https://global.repo.jmix.io/repository/public'
+        url publicRepoUrl
     }
     if (project.hasProperty('jmixLicenseKey')) {
         String licenseKey = project.property('jmixLicenseKey')
+        def premiumRepoUrl = project.findProperty('jmixPremiumRepository') ?: 'https://global.repo.jmix.io/repository/premium'
         def premiumRepoUser = licenseKey.substring(0, licenseKey.indexOf('-'))
         def premiumRepoPass = licenseKey.substring(licenseKey.indexOf('-') + 1)
         maven {
-            url = 'https://global.repo.jmix.io/repository/premium'
+            url = premiumRepoUrl
             credentials {
                 username = premiumRepoUser
                 password = premiumRepoPass
+            }
+        }
+    }
+    // Add extra repositories for the vaadinClean task (unable to add repository to custom task via tooling API)
+    if (project.hasProperty('extraRepositories')) {
+        def extraReposValue = project.property('extraRepositories')
+        extraReposValue.split(',').each { repoData ->
+            String[] repoDataItems = repoData.split("\\|")
+            if(repoDataItems.size() == 1) {
+                String repoUrl = repoDataItems[0].trim()
+                maven { url = repoUrl }
+            } else {
+                String repoUrl = repoDataItems[0].trim()
+                String repoUser = repoDataItems[1].trim()
+                String repoPass = repoDataItems[2].trim()
+                maven {
+                    url = repoUrl
+                    credentials {
+                        username = repoUser
+                        password = repoPass
+                    }
+                    if (repoUrl.startsWith("http://")) {
+                        setAllowInsecureProtocol(true);
+                    }
+                }
             }
         }
     }

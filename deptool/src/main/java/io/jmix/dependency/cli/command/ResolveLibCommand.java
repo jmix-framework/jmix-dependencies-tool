@@ -34,13 +34,19 @@ public class ResolveLibCommand implements BaseCommand {
     @Parameter(names = {"--jmix-license-key"}, description = "Jmix license key (required if the project uses commercial add-ons", order = 6)
     private String jmixLicenseKey;
 
+    @Parameter(names = {"--gradle-version"}, description = "What version of Gradle installation will be used", order = 7)
+    private String gradleVersion;
+
+    @Parameter(names = {"--public-repository"}, description = "Url for repository with public artifacts", order = 8)
+    private String publicRepository;
+
+    @Parameter(names = {"--premium-repository"}, description = "Url for repository with premium artifacts", order = 9)
+    private String premiumRepository;
+
     @Parameter(names = {"--repository"}, description = "Additional Maven repository for dependencies resolution. The format is " +
             "the following: <url>|<username>|<password>, e.g. http://localhost:8081/jmix|admin|admin. " +
-            "If credentials are not required then just an URL must be passed", order = 7)
+            "If credentials are not required then just an URL must be passed", order = 10)
     private List<String> repositories;
-
-    @Parameter(names = {"--gradle-version"}, description = "What version of Gradle installation will be used", order = 8)
-    private String gradleVersion;
 
     @Override
     public void run() {
@@ -70,6 +76,12 @@ public class ResolveLibCommand implements BaseCommand {
             }
             if (jmixLicenseKey != null) {
                 taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
+            }
+            if (publicRepository != null) {
+                taskArguments.add("-PjmixPublicRepository=" + publicRepository);
+            }
+            if (premiumRepository != null) {
+                taskArguments.add("-PjmixPremiumRepository=" + premiumRepository);
             }
             if (repositories != null) {
                 for (String repository : repositories) {

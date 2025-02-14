@@ -28,16 +28,19 @@ if (project.hasProperty('jmixVersion')) {
 }
 
 repositories {
+    def publicRepoUrl = project.findProperty('jmixPublicRepository') ?: 'https://global.repo.jmix.io/repository/public'
+
     mavenCentral()
     maven {
-        url 'https://global.repo.jmix.io/repository/public'
+        url publicRepoUrl
     }
     if (project.hasProperty('jmixLicenseKey')) {
         String licenseKey = project.property('jmixLicenseKey')
+        def premiumRepoUrl = project.findProperty('jmixPremiumRepository') ?: 'https://global.repo.jmix.io/repository/premium'
         def premiumRepoUser = licenseKey.substring(0, licenseKey.indexOf('-'))
         def premiumRepoPass = licenseKey.substring(licenseKey.indexOf('-') + 1)
         maven {
-            url = 'https://global.repo.jmix.io/repository/premium'
+            url = premiumRepoUrl
             credentials {
                 username = premiumRepoUser
                 password = premiumRepoPass

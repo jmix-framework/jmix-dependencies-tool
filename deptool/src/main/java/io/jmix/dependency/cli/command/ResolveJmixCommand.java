@@ -40,9 +40,15 @@ public class ResolveJmixCommand implements BaseCommand {
     @Parameter(names = {"--gradle-version"}, description = "What version of Gradle installation will be used", order = 6)
     private String gradleVersion;
 
+    @Parameter(names = {"--public-repository"}, description = "Url for repository with public artifacts", order = 7)
+    private String publicRepository;
+
+    @Parameter(names = {"--premium-repository"}, description = "Url for repository with premium artifacts", order = 8)
+    private String premiumRepository;
+
     @Parameter(names = {"--repository"}, description = "Additional Maven repository for dependencies resolution. The format is " +
             "the following: <url>|<username>|<password>, e.g. http://localhost:8081/jmix|admin|admin. " +
-            "If credentials are not required then just an URL must be passed", order = 7)
+            "If credentials are not required then just an URL must be passed", order = 9)
     private List<String> repositories;
 
     @Override
@@ -72,6 +78,12 @@ public class ResolveJmixCommand implements BaseCommand {
                         "--dependency", dependency));
                 if (jmixLicenseKey != null) {
                     taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
+                }
+                if (publicRepository != null) {
+                    taskArguments.add("-PjmixPublicRepository=" + publicRepository);
+                }
+                if (premiumRepository != null) {
+                    taskArguments.add("-PjmixPremiumRepository=" + premiumRepository);
                 }
                 if (repositories != null) {
                     for (String repository : repositories) {
@@ -120,6 +132,12 @@ public class ResolveJmixCommand implements BaseCommand {
             taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
             if (jmixLicenseKey != null) {
                 taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
+            }
+            if (publicRepository != null) {
+                taskArguments.add("-PjmixPublicRepository=" + publicRepository);
+            }
+            if (premiumRepository != null) {
+                taskArguments.add("-PjmixPremiumRepository=" + premiumRepository);
             }
             if (repositories != null) {
                 for (String repository : repositories) {
