@@ -62,8 +62,21 @@ public class ExportNpmCommand implements BaseCommand {
 
     protected void downloadNpmArchives(String packageLockFileLocation, String directory) {
         log.info("-= Download tgz-archives =-");
-        String command = "npx download-tgz package-lock " + packageLockFileLocation + " --directory=" + directory;
-        executeCommand(downloaderDir, command);
+        String downloadCommandTemplate = "npx download-tgz package-lock %s --directory=" + directory;
+        executeCommand(downloaderDir, downloadCommandTemplate.formatted(packageLockFileLocation));
+
+        try {
+            Path additionalDependenciesPackageLockJsonPath = Paths.get(resolverProjectPath
+                    + "/additional-dependencies/package-lock.json").toAbsolutePath().normalize();
+
+            if (additionalDependenciesPackageLockJsonPath.toFile().exists()) {
+                executeCommand(downloaderDir,
+                        downloadCommandTemplate.formatted(
+                                additionalDependenciesPackageLockJsonPath.toString()));
+            }
+        } catch (Exception e) {
+            log.warn("Error when trying to download additional dependencies", e);
+        }
     }
 
     protected void copyPackageLock() {

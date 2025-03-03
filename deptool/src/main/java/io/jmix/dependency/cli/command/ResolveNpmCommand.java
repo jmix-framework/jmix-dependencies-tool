@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -76,6 +77,7 @@ public class ResolveNpmCommand implements BaseCommand {
         vaadinClean(jmixGradleClient);
         copyStubPackageLock();
         resolveDependencies(jmixGradleClient);
+        resolveAdditionalDependencies();
     }
 
     protected void vaadinClean(JmixGradleClient jmixGradleClient) {
@@ -151,6 +153,44 @@ public class ResolveNpmCommand implements BaseCommand {
                     "resolveNpmDependencies",
                     taskArguments);
             log.info(result);
+        }
+    }
+
+    private void resolveAdditionalDependencies() {
+        if (jmixVersion == null) {
+            return;
+        }
+
+        try {
+            File resolverProjectFile = new File(resolverProjectPath);
+            File additionalDependenciesDir = new File(resolverProjectFile.getAbsolutePath() + "/additional-dependencies");
+            FileUtils.cleanDirectory(additionalDependenciesDir);
+
+            String additionalDependenciesDirPath = "version-" + jmixVersion.replace(".", "-");
+            URL additionalDependenciesUrl = getClass().getClassLoader().getResource("jmix-dependencies/additional-dependencies/" + additionalDependenciesDirPath + "/package-lock.json");
+            if (additionalDependenciesUrl == null) {
+                return;
+            }
+
+            File additionalDependenciesFile = new File(additionalDependenciesUrl.toURI());
+            if (!additionalDependenciesFile.exists()) {
+                return;
+            }
+
+            log.info("-= Resolve additional dependencies =-");
+
+            if (!resolverProjectFile.exists()) {
+                return;
+            }
+
+            log.info("-= Copy additional dependencies package-lock.json =-");
+            try {
+                FileUtils.copyFileToDirectory(additionalDependenciesFile, additionalDependenciesDir);
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to copy additional dependencies package-lock.json", e);
+            }
+        } catch (Exception e) {
+            log.info("Error when trying to download additional dependencies", e);
         }
     }
 }
