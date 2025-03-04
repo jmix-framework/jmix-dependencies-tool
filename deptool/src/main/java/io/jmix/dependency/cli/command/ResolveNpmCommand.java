@@ -170,9 +170,8 @@ public class ResolveNpmCommand implements BaseCommand {
             }
 
             String versionDirName = "version-" + jmixVersion.replace(".", "-");
-            try (InputStream packageLockJsonContent = getAdditionalDependenciesFile(versionDirName, "package-lock.json");
-                 InputStream packageJsonContent = getAdditionalDependenciesFile(versionDirName, "package.json")) {
-                if (packageLockJsonContent == null || packageJsonContent == null) {
+            try (InputStream packageLockContent = getAdditionalDependenciesFile(versionDirName, "package-lock.json")) {
+                if (packageLockContent == null) {
                     return;
                 }
 
@@ -182,7 +181,7 @@ public class ResolveNpmCommand implements BaseCommand {
                     File packageLockJson = new File(additionalDependenciesDir, "package-lock.json");
                     packageLockJson.createNewFile();
                     log.info("-= Copy additional dependencies package-lock.json =-");
-                    FileUtils.copyInputStreamToFile(packageLockJsonContent, packageLockJson);
+                    FileUtils.copyInputStreamToFile(packageLockContent, packageLockJson);
                 } catch (IOException e) {
                     throw new RuntimeException("Unable to copy additional dependencies package-lock.json", e);
                 }
