@@ -49,7 +49,8 @@ public class ExportNpmCommand implements BaseCommand {
         log.info("package-lock.json file: {}", packageLockJsonPath);
 
         installNodeTgzDownloader();
-        downloadNpmArchives(packageLockJsonPath.toString(), targetDirectoryPath.toString());
+        downloadAdditionalNpmArchives(targetDirectoryPath.toString());
+        downloadMainNpmArchives(packageLockJsonPath.toString(), targetDirectoryPath.toString());
         copyPackageLock();
 
         log.info("Export completed successfully");
@@ -60,19 +61,18 @@ public class ExportNpmCommand implements BaseCommand {
         executeCommand(downloaderDir, "npm install node-tgz-downloader");
     }
 
-    protected void downloadNpmArchives(String packageLockFileLocation, String directory) {
-        log.info("-= Download tgz-archives =-");
-        String downloadCommandTemplate = "npx download-tgz package-lock %s --directory=" + directory;
-        executeCommand(downloaderDir, downloadCommandTemplate.formatted(packageLockFileLocation));
+    private void downloadMainNpmArchives(String packageLockFileLocation, String directory) {
+        log.info("-= Download main tgz-archives =-");
+        executeCommand(downloaderDir, "npx download-tgz package-lock " + packageLockFileLocation + " --directory=" + directory);
+    }
 
+    private void downloadAdditionalNpmArchives(String directory) {
         try {
-            Path additionalDependenciesPackageLockJsonPath = Paths.get(resolverProjectPath
-                    + "/additional-dependencies/package-lock.json").toAbsolutePath().normalize();
-
-            if (additionalDependenciesPackageLockJsonPath.toFile().exists()) {
-                executeCommand(downloaderDir,
-                        downloadCommandTemplate.formatted(
-                                additionalDependenciesPackageLockJsonPath.toString()));
+            String additionalDependenciesDirPath = resolverProjectPath + "/additional-dependencies";
+            Path packageLockPath = Paths.get(additionalDependenciesDirPath, "package-lock.json").toAbsolutePath().normalize();
+            if (packageLockPath.toFile().exists()) {
+                log.info("-= Download additional tgz-archives =-");
+                executeCommand(downloaderDir, "npx download-tgz package-lock " + packageLockPath + " --directory=" + directory);
             }
         } catch (Exception e) {
             log.warn("Error when trying to download additional dependencies", e);

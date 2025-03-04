@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -162,35 +162,39 @@ public class ResolveNpmCommand implements BaseCommand {
         }
 
         try {
-            File resolverProjectFile = new File(resolverProjectPath);
-            File additionalDependenciesDir = new File(resolverProjectFile.getAbsolutePath() + "/additional-dependencies");
-            FileUtils.cleanDirectory(additionalDependenciesDir);
-
-            String additionalDependenciesDirPath = "version-" + jmixVersion.replace(".", "-");
-            URL additionalDependenciesUrl = getClass().getClassLoader().getResource("jmix-dependencies/additional-dependencies/" + additionalDependenciesDirPath + "/package-lock.json");
-            if (additionalDependenciesUrl == null) {
+            File additionalDependenciesDir = Paths.get(resolverProjectPath + "/additional-dependencies").toAbsolutePath().normalize().toFile();
+            if (additionalDependenciesDir.exists()) {
+                FileUtils.cleanDirectory(additionalDependenciesDir);
+            } else if (!additionalDependenciesDir.mkdir()) {
                 return;
             }
 
-            File additionalDependenciesFile = new File(additionalDependenciesUrl.toURI());
-            if (!additionalDependenciesFile.exists()) {
-                return;
+            String versionDirName = "version-" + jmixVersion.replace(".", "-");
+            try (InputStream packageLockJsonContent = getAdditionalDependenciesFile(versionDirName, "package-lock.json");
+                 InputStream packageJsonContent = getAdditionalDependenciesFile(versionDirName, "package.json")) {
+                if (packageLockJsonContent == null || packageJsonContent == null) {
+                    return;
+                }
+
+                log.info("-= Resolve additional dependencies =-");
+
+                try {
+                    File packageLockJson = new File(additionalDependenciesDir, "package-lock.json");
+                    packageLockJson.createNewFile();
+                    log.info("-= Copy additional dependencies package-lock.json =-");
+                    FileUtils.copyInputStreamToFile(packageLockJsonContent, packageLockJson);
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to copy additional dependencies package-lock.json", e);
+                }
             }
 
-            log.info("-= Resolve additional dependencies =-");
-
-            if (!resolverProjectFile.exists()) {
-                return;
-            }
-
-            log.info("-= Copy additional dependencies package-lock.json =-");
-            try {
-                FileUtils.copyFileToDirectory(additionalDependenciesFile, additionalDependenciesDir);
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to copy additional dependencies package-lock.json", e);
-            }
         } catch (Exception e) {
             log.info("Error when trying to download additional dependencies", e);
         }
+    }
+
+    private InputStream getAdditionalDependenciesFile(String versionDirName, String filename) {
+        return getClass().getClassLoader().getResourceAsStream(
+                "jmix-dependencies/additional-dependencies/" + versionDirName + "/" + filename);
     }
 }
