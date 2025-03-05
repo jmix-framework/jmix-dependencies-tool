@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static io.jmix.dependency.cli.dependency.additional.AdditionalDependencyFileType.PACKAGE_LOCK;
+
 @Parameters(commandDescription = "Resolves Npm dependencies")
 public class ResolveNpmCommand implements BaseCommand {
 
@@ -162,15 +164,15 @@ public class ResolveNpmCommand implements BaseCommand {
         }
 
         try {
-            File additionalDependenciesDir = Paths.get(resolverProjectPath + "/additional-dependencies").toAbsolutePath().normalize().toFile();
+            File additionalDependenciesDir = Paths.get(resolverProjectPath,
+                    "additional-dependencies").toAbsolutePath().normalize().toFile();
             if (additionalDependenciesDir.exists()) {
                 FileUtils.cleanDirectory(additionalDependenciesDir);
             } else if (!additionalDependenciesDir.mkdir()) {
                 return;
             }
 
-            String versionDirName = "version-" + jmixVersion.replace(".", "-");
-            try (InputStream packageLockContent = getAdditionalDependenciesFile(versionDirName, "package-lock.json")) {
+            try (InputStream packageLockContent = PACKAGE_LOCK.findFileContent(jmixVersion)) {
                 if (packageLockContent == null) {
                     return;
                 }
@@ -179,6 +181,7 @@ public class ResolveNpmCommand implements BaseCommand {
 
                 try {
                     File packageLockJson = new File(additionalDependenciesDir, "package-lock.json");
+                    //noinspection ResultOfMethodCallIgnored
                     packageLockJson.createNewFile();
                     log.info("-= Copy additional dependencies package-lock.json =-");
                     FileUtils.copyInputStreamToFile(packageLockContent, packageLockJson);
@@ -192,8 +195,4 @@ public class ResolveNpmCommand implements BaseCommand {
         }
     }
 
-    private InputStream getAdditionalDependenciesFile(String versionDirName, String filename) {
-        return getClass().getClassLoader().getResourceAsStream(
-                "jmix-dependencies/additional-dependencies/" + versionDirName + "/" + filename);
-    }
 }

@@ -48,19 +48,75 @@ public class JmixDependencies {
                 dependencies.addAll(commercialDependencies);
             }
             return dependencies;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (DocumentException e) {
+        } catch (IOException | DocumentException e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
-     * Extracts minor version from version string, e.g. 1.4.2 -> 1.4
+     * Extracts a minor version from version string.
+     * Examples:
+     * <ul>
+     *     <li>null -> null</li>
+     *     <li>"" -> ""</li>
+     *     <li>abc -> ""</li>
+     *     <li>1.4.2 -> 1.4</li>
+     *     <li>1.4 -> 1.4</li>
+     *     <li>1 -> 1.0</li>
+     * </ul>
      */
-    private static String getMinorVersion(String jmixVersion) {
+    public static String getMinorVersion(String jmixVersion) {
+        if (jmixVersion == null) {
+            return null;
+        }
+
         String[] parts = jmixVersion.split("\\.");
+        if (parts.length < 2) {
+            if (parts.length == 0) {
+                return "";
+            } else {
+                return parts[0] + "." + 0;
+            }
+        }
+
         return parts[0] + "." + parts[1];
+    }
+
+    /**
+     * Extracts a patch from version string.
+     * Examples:
+     * <ul>
+     *     <li>null -> null</li>
+     *     <li>"" -> ""</li>
+     *     <li>abc -> ""</li>
+     *     <li>1.4.2 -> 2</li>
+     *     <li>1.4 -> 0</li>
+     *     <li>1 -> 0</li>
+     * </ul>
+     */
+    public static String getPatchVersion(String jmixVersion) {
+        if (jmixVersion == null) {
+            return null;
+        }
+
+        String[] parts = jmixVersion.split("\\.");
+        if (parts.length < 3) {
+            if (parts.length == 0) {
+                return "";
+            } else {
+                return "0";
+            }
+        }
+
+        return parts[2];
+    }
+
+    public static boolean hasPatch(String jmixVersion) {
+        if (jmixVersion == null) {
+            return false;
+        }
+        String[] parts = jmixVersion.split("\\.");
+        return parts.length > 2;
     }
 
 }
