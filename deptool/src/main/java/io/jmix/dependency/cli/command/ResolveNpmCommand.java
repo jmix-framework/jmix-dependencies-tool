@@ -11,10 +11,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+import static io.jmix.dependency.cli.dependency.additional.AdditionalDependencyFileType.PACKAGE_LOCK;
 
 @Parameters(commandDescription = "Resolves Npm dependencies")
 public class ResolveNpmCommand implements BaseCommand {
@@ -76,6 +79,7 @@ public class ResolveNpmCommand implements BaseCommand {
         vaadinClean(jmixGradleClient);
         copyStubPackageLock();
         resolveDependencies(jmixGradleClient);
+        resolveAdditionalDependencies();
     }
 
     protected void vaadinClean(JmixGradleClient jmixGradleClient) {
@@ -153,4 +157,42 @@ public class ResolveNpmCommand implements BaseCommand {
             log.info(result);
         }
     }
+
+    private void resolveAdditionalDependencies() {
+        if (jmixVersion == null) {
+            return;
+        }
+
+        try {
+            File additionalDependenciesDir = Paths.get(resolverProjectPath,
+                    "additional-dependencies").toAbsolutePath().normalize().toFile();
+            if (additionalDependenciesDir.exists()) {
+                FileUtils.cleanDirectory(additionalDependenciesDir);
+            } else if (!additionalDependenciesDir.mkdir()) {
+                return;
+            }
+
+            try (InputStream packageLockContent = PACKAGE_LOCK.findFileContent(jmixVersion)) {
+                if (packageLockContent == null) {
+                    return;
+                }
+
+                log.info("-= Resolve additional dependencies =-");
+
+                try {
+                    File packageLockJson = new File(additionalDependenciesDir, "package-lock.json");
+                    //noinspection ResultOfMethodCallIgnored
+                    packageLockJson.createNewFile();
+                    log.info("-= Copy additional dependencies package-lock.json =-");
+                    FileUtils.copyInputStreamToFile(packageLockContent, packageLockJson);
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to copy additional dependencies package-lock.json", e);
+                }
+            }
+
+        } catch (Exception e) {
+            log.info("Error when trying to download additional dependencies", e);
+        }
+    }
+
 }
