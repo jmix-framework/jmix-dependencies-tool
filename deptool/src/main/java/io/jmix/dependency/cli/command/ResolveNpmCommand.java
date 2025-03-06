@@ -174,6 +174,7 @@ public class ResolveNpmCommand implements BaseCommand {
 
             try (InputStream packageLockContent = PACKAGE_LOCK.findFileContent(jmixVersion)) {
                 if (packageLockContent == null) {
+                    log.info("-= No additional dependencies was found, skipping this step =-");
                     return;
                 }
 
