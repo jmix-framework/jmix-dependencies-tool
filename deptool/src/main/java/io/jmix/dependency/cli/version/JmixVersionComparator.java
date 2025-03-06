@@ -31,7 +31,7 @@ public class JmixVersionComparator implements Comparator<String> {
             return -1;
         }
 
-        if (v2 == null && v1 != null) {
+        if (v1 != null && v2 == null) {
             return 1;
         }
 

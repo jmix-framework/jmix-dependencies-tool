@@ -5,7 +5,7 @@
 
 package io.jmix.dependency.cli.version;
 
-public record JmixVersion(int major, int minor, int patch, String suffix) {
+public record JmixVersion(int major, int minor, int patch, String suffix) implements Comparable<JmixVersion> {
 
     private static final Character DOT = '.';
 
@@ -27,6 +27,10 @@ public record JmixVersion(int major, int minor, int patch, String suffix) {
 
     public boolean isSnapshot() {
         return JmixVersionUtils.isSnapshot(versionString());
+    }
+
+    public boolean isRC() {
+        return JmixVersionUtils.isRC(versionString());
     }
 
     public boolean isStable() {
@@ -57,5 +61,10 @@ public record JmixVersion(int major, int minor, int patch, String suffix) {
     @Override
     public String toString() {
         return versionString();
+    }
+
+    @Override
+    public int compareTo(JmixVersion o) {
+        return JmixVersionUtils.compare(versionString(), o.versionString());
     }
 }
