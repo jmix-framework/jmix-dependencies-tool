@@ -1,5 +1,7 @@
 package io.jmix.dependency.cli.dependency.additional;
 
+import io.jmix.dependency.cli.version.JmixVersion;
+
 import java.io.InputStream;
 
 public enum AdditionalDependencyFileType {
@@ -23,7 +25,7 @@ public enum AdditionalDependencyFileType {
         return fileName;
     }
 
-    public InputStream findFileContent(String jmixVersion) {
+    public InputStream findFileContent(JmixVersion jmixVersion) {
         return getDependencyType().findFileContent(jmixVersion, getFileName());
     }
 }
