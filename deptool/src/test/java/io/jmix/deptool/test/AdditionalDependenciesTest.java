@@ -16,14 +16,15 @@ public class AdditionalDependenciesTest {
         try (var fileContent = PACKAGE_LOCK.findFileContent(jmixVersion)) {
             byte[] package_lock_jmix_2_5 = fileContent.readAllBytes();
             Assertions.assertNotNull(package_lock_jmix_2_5);
-            testPackageJson(jmixVersion.withPatch(5), package_lock_jmix_2_5, true);
-            Assertions.assertThrows(NullPointerException.class, () -> {
-                testPackageJson(jmixVersion.withMajor(1), package_lock_jmix_2_5, false);
-            });
+            testPackageJson(jmixVersion.withPatch(5), package_lock_jmix_2_5);
+            testPackageJson(jmixVersion.withPatch(999).withSuffix("-SNAPSHOT"), package_lock_jmix_2_5);
+            testPackageJson(jmixVersion.withSuffix("-RC1"), package_lock_jmix_2_5);
+            Assertions.assertThrows(NullPointerException.class, () ->
+                    testPackageJson(jmixVersion.withMajor(1), package_lock_jmix_2_5));
         }
     }
 
-    private void testPackageJson(JmixVersion jmixVersion, byte[] expected, boolean shouldBeEquals) throws IOException {
+    private void testPackageJson(JmixVersion jmixVersion, byte[] expected) throws IOException {
         try (var content = PACKAGE_LOCK.findFileContent(jmixVersion)) {
             byte[] actual = content.readAllBytes();
             Assertions.assertNotNull(actual);

@@ -25,6 +25,10 @@ public record JmixVersion(int major, int minor, int patch, String suffix) implem
         return new JmixVersion(major, minor, patch, suffix);
     }
 
+    public JmixVersion withSuffix(String suffix) {
+        return new JmixVersion(major, minor, patch, suffix);
+    }
+
     public boolean isSnapshot() {
         return JmixVersionUtils.isSnapshot(versionString());
     }
