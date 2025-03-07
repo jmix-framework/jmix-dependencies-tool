@@ -311,6 +311,8 @@ The `deptool` utility resolves dependencies by invocation of gradle tasks in the
 
 The `JmixNpmDependenciesPlugin` adds the `resolveNpmDependencies` task. This task is invoked by the `deptool` utility for dependencies resolution.
 
+Also, if you need to declare additional npm dependencies, you can add or edit `package-lock.json` file in [special directory](./deptool/src/main/resources/jmix-dependencies/additional/npm) for a suitable Jmix version.
+
 ```shell
 ./gradlew resolveDependencies \
   --dependency io.jmix.flowui:jmix-flowui \

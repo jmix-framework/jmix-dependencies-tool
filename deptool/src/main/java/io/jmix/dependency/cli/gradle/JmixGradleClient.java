@@ -1,5 +1,6 @@
 package io.jmix.dependency.cli.gradle;
 
+import io.jmix.dependency.cli.util.StringUtils;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
 
@@ -26,7 +27,7 @@ public class JmixGradleClient {
 
     public ProjectConnection getProjectConnection() {
         GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(new File(projectDir));
-        if (gradleVersion != null && !gradleVersion.isBlank()) {
+        if (StringUtils.isBlank(gradleVersion)) {
             gradleConnector.useGradleVersion(gradleVersion);
         }
 

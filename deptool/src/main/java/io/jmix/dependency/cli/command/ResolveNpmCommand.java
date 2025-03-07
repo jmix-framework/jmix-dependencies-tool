@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import io.jmix.dependency.cli.dependency.JmixDependencies;
 import io.jmix.dependency.cli.gradle.JmixGradleClient;
+import io.jmix.dependency.cli.version.JmixVersion;
 import org.apache.commons.io.FileUtils;
 import org.gradle.tooling.ProjectConnection;
 import org.slf4j.Logger;
@@ -11,10 +12,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+import static io.jmix.dependency.cli.dependency.additional.AdditionalDependencyFileType.PACKAGE_LOCK;
 
 @Parameters(commandDescription = "Resolves Npm dependencies")
 public class ResolveNpmCommand implements BaseCommand {
@@ -54,8 +58,12 @@ public class ResolveNpmCommand implements BaseCommand {
             "If credentials are not required then just an URL must be passed", order = 9)
     private List<String> repositories;
 
+    private JmixVersion parsedVersion;
+
     @Override
     public void run() {
+        parsedVersion = JmixVersion.from(jmixVersion);
+
         if (jmixPluginVersion == null) {
             jmixPluginVersion = jmixVersion;
         }
@@ -76,6 +84,7 @@ public class ResolveNpmCommand implements BaseCommand {
         vaadinClean(jmixGradleClient);
         copyStubPackageLock();
         resolveDependencies(jmixGradleClient);
+        resolveAdditionalDependencies();
     }
 
     protected void vaadinClean(JmixGradleClient jmixGradleClient) {
@@ -153,4 +162,45 @@ public class ResolveNpmCommand implements BaseCommand {
             log.info(result);
         }
     }
+
+    private void resolveAdditionalDependencies() {
+        try {
+            File additionalDependenciesDir = Paths.get(resolverProjectPath,
+                    "additional-dependencies").toAbsolutePath().normalize().toFile();
+            if (additionalDependenciesDir.exists()) {
+                FileUtils.cleanDirectory(additionalDependenciesDir);
+            } else if (!additionalDependenciesDir.mkdir()) {
+                return;
+            }
+
+            resolveAdditionalPackageLockFile(additionalDependenciesDir);
+
+        } catch (Exception e) {
+            log.info("Error when trying to download additional dependencies", e);
+        }
+    }
+
+    private void resolveAdditionalPackageLockFile(File additionalDependenciesDir) throws IOException {
+        String packageLockFileName = PACKAGE_LOCK.getFileName();
+
+        try (InputStream packageLockContent = PACKAGE_LOCK.findFileContent(parsedVersion)) {
+            if (packageLockContent == null) {
+                log.info("-= No additional dependencies was found, skipping this step =-");
+                return;
+            }
+
+            log.info("-= Resolve additional dependencies =-");
+
+            try {
+                File packageLockJson = new File(additionalDependenciesDir, packageLockFileName);
+                //noinspection ResultOfMethodCallIgnored
+                packageLockJson.createNewFile();
+                log.info("-= Copy additional dependencies files =-");
+                FileUtils.copyInputStreamToFile(packageLockContent, packageLockJson);
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to copy additional dependencies file: " + packageLockFileName, e);
+            }
+        }
+    }
+
 }
