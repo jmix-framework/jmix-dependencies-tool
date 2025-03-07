@@ -41,6 +41,10 @@ public record JmixVersion(int major, int minor, int patch, String suffix) implem
         return JmixVersionUtils.isStable(versionString());
     }
 
+    public String majorMinor() {
+        return JmixVersionUtils.getMinorVersion(versionString(false));
+    }
+
     public String versionString() {
         return versionString(true);
     }

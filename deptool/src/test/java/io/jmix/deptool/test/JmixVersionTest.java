@@ -1,10 +1,14 @@
 package io.jmix.deptool.test;
 
 import io.jmix.dependency.cli.version.JmixVersion;
+import io.jmix.dependency.cli.version.JmixVersionUtils;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -65,5 +69,33 @@ public class JmixVersionTest {
         assertTrue(compareVersions.apply(dynamicVersion) > 0);
         assertTrue(compareVersions.apply(dynamicVersion.withMajor(1).withMinor(4)) < 0);
         assertEquals(0, compareVersions.apply(dynamicVersion.withMajor(1)));
+
+        var unsortedVersions = new ArrayList<>(List.of(
+                "2.2.2",
+                "1.5.0",
+                "1.4.5",
+                "3.1.0",
+                "2.1.0"
+        ));
+
+        var sortedVersions = List.of(
+                "3.1.0",
+                "2.2.2",
+                "2.1.0",
+                "1.5.0",
+                "1.4.5"
+        );
+
+        List<JmixVersion> unsortedJmixVersions = unsortedVersions.stream().map(JmixVersion::from).toList();
+        List<JmixVersion> unsortedJmixVersions2 = new ArrayList<>(unsortedJmixVersions);
+
+        assertIterableEquals(unsortedJmixVersions, unsortedJmixVersions2);
+
+        List<JmixVersion> sortedJmixVersions = unsortedJmixVersions2.stream().sorted().collect(Collectors.toList());
+        assertThrows(AssertionFailedError.class, () -> assertIterableEquals(sortedJmixVersions, unsortedJmixVersions));
+
+        assertThrows(AssertionFailedError.class, () -> assertIterableEquals(sortedVersions, unsortedVersions));
+        JmixVersionUtils.sort(unsortedVersions);
+        assertIterableEquals(sortedVersions, unsortedVersions);
     }
 }
