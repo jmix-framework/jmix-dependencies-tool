@@ -1,13 +1,18 @@
 package io.jmix.dependency.cli.dependency;
 
-import org.dom4j.*;
+import io.jmix.dependency.cli.version.JmixVersionUtils;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JmixDependencies {
@@ -15,7 +20,7 @@ public class JmixDependencies {
     private static final Logger log = LoggerFactory.getLogger(JmixDependencies.class);
 
     public static Set<String> getVersionSpecificJmixDependencies(String jmixVersion, boolean resolveCommercialAddons) {
-        String minorJmixVersion = getMinorVersion(jmixVersion);
+        String minorJmixVersion = JmixVersionUtils.getMinorVersion(jmixVersion);
         Set<String> dependencies = _getVersionSpecificDependencies(minorJmixVersion, resolveCommercialAddons);
         dependencies.addAll(_getVersionSpecificDependencies(jmixVersion, resolveCommercialAddons));
         //if there are no files for the given dependency version then use the default file (dependencies-default.xml)
@@ -48,19 +53,9 @@ public class JmixDependencies {
                 dependencies.addAll(commercialDependencies);
             }
             return dependencies;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (DocumentException e) {
+        } catch (IOException | DocumentException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Extracts minor version from version string, e.g. 1.4.2 -> 1.4
-     */
-    private static String getMinorVersion(String jmixVersion) {
-        String[] parts = jmixVersion.split("\\.");
-        return parts[0] + "." + parts[1];
     }
 
 }

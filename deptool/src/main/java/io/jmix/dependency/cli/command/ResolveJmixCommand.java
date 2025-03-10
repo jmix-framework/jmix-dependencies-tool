@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import io.jmix.dependency.cli.dependency.JmixDependencies;
 import io.jmix.dependency.cli.gradle.JmixGradleClient;
+import io.jmix.dependency.cli.version.JmixVersion;
 import org.gradle.tooling.ProjectConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,8 +52,12 @@ public class ResolveJmixCommand implements BaseCommand {
             "If credentials are not required then just an URL must be passed", order = 9)
     private List<String> repositories;
 
+    private JmixVersion parsedVersion;
+
     @Override
     public void run() {
+        parsedVersion = JmixVersion.from(jmixVersion);
+
         if (jmixPluginVersion == null) {
             jmixPluginVersion = jmixVersion;
         }
