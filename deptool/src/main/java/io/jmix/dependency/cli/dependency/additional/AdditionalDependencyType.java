@@ -42,11 +42,11 @@ public enum AdditionalDependencyType {
                 }
             } else {
                 for (int patch = jmixVersion.patch(); patch >= 0; patch--) {
+                    String versionString = jmixVersion.withPatch(patch).versionString(false);
+                    resource = findResourceAsStream(versionString, fileName);
                     if (resource != null) {
                         break;
                     }
-                    String versionString = jmixVersion.withPatch(patch).versionString(false);
-                    resource = findResourceAsStream(versionString, fileName);
                 }
             }
         } catch (NumberFormatException ignored) {

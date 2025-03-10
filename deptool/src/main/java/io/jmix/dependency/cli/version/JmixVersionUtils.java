@@ -5,35 +5,29 @@ import io.jmix.dependency.cli.util.StringUtils;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static io.jmix.dependency.cli.util.StringUtils.isBlank;
+
 public class JmixVersionUtils {
 
+    private static final String defaultSuffixSeparator = "-";
+    private static final String SNAPSHOT_SUFFIX = "SNAPSHOT";
     private static final Pattern VERSION_SPLIT_REGEX = Pattern.compile("[.-]");
-    private static final Pattern UNSTABLE_VERSION_PATTERN = Pattern.compile("(-\\w*$)|(\\.[a-zA-Z]+\\d*$)");
-    private static final Pattern SNAPSHOT_PATTERN = Pattern.compile("-SNAPSHOT$");
-    private static final Pattern RC_PATTERN = Pattern.compile("-RC$");
+    private static final Pattern RC_PATTERN = Pattern.compile("(-RC\\d*)$");
 
     public static final JmixVersionComparator VERSION_COMPARATOR = JmixVersionComparator.INSTANCE;
 
     public static JmixVersion toJmixVersion(String version) {
-        IllegalArgumentException invalidVersionException =
-                new IllegalArgumentException("Invalid Jmix version. Version should be in format x.y.z");
-
         if (!isValidVersion(version)) {
-            throw invalidVersionException;
+            throw new IllegalArgumentException("Invalid Jmix version. Version should be in format x.y.z");
         }
 
         Integer major = extractMajorNumber(version);
         Integer minor = extractMinorNumber(version);
         Integer patch = extractPatchNumber(version);
 
-        if (major == null || minor == null || patch == null) {
-            throw invalidVersionException;
-        }
-
-        String suffixSeparator = "-";
-        String suffix = extractSuffix(version, suffixSeparator);
+        String suffix = extractSuffix(version, defaultSuffixSeparator);
         if (StringUtils.isNotBlank(suffix)) {
-            suffix = suffixSeparator + suffix;
+            suffix = defaultSuffixSeparator + suffix;
         }
 
         return new JmixVersion(major, minor, patch, suffix);
@@ -47,7 +41,7 @@ public class JmixVersionUtils {
     }
 
     public static boolean hasPatch(String version) {
-        if (StringUtils.isBlank(version)) {
+        if (isBlank(version)) {
             return false;
         }
         return VERSION_SPLIT_REGEX.split(version).length > 2;
@@ -103,7 +97,7 @@ public class JmixVersionUtils {
      * </ul>
      */
     public static Integer extractMinorNumber(String version) {
-        if (StringUtils.isBlank(version)) {
+        if (isBlank(version)) {
             return null;
         }
 
@@ -145,8 +139,12 @@ public class JmixVersionUtils {
         return parseNumberSafely(patch);
     }
 
+    public static String extractSuffix(String version) {
+        return extractSuffix(version, defaultSuffixSeparator);
+    }
+
     public static String extractSuffix(String version, String separator) {
-        if (StringUtils.isBlank(version)) {
+        if (isBlank(version)) {
             return "";
         }
 
@@ -159,35 +157,52 @@ public class JmixVersionUtils {
     }
 
     public static boolean isSnapshot(String version) {
-        return StringUtils.isNotBlank(version) && SNAPSHOT_PATTERN.matcher(version).find();
+        return StringUtils.isNotBlank(version) && SNAPSHOT_SUFFIX.equalsIgnoreCase(extractSuffix(version));
     }
 
     public static boolean isRC(String version) {
         return StringUtils.isNotBlank(version) && RC_PATTERN.matcher(version).find();
     }
 
+    /**
+     * @return {@code true} if {@code version} has suffix, {@code false} otherwise.
+     * @see #extractSuffix
+     */
     public static boolean isUnstable(String version) {
-        return StringUtils.isNotBlank(version) && UNSTABLE_VERSION_PATTERN.matcher(version).find();
+        return StringUtils.isNotBlank(version) && StringUtils.isNotBlank(extractSuffix(version));
     }
 
+    /**
+     *
+     * @return {@code false} if {@link #isUnstable} returns {@code true} and vice versa.
+     */
     public static boolean isStable(String version) {
         return !isUnstable(version);
     }
 
     /**
-     * <p>Returns version without RC or SNAPSHOT suffix</p>
+     * <p>Returns version without a suffix if any</p>
      *
      * <pre>
      * null           -> null
      * ""             -> null
      * " "            -> null
      * "bob"          -> "bob"
-     * "7.0-SNAPSHOT" -> "7.0"
-     * "7.0.0.BETA1"  -> "7.0.0"
+     * "2.5.0-SNAPSHOT" -> "2.5.0"
      * </pre>
      */
     public static String getStableVersion(String version) {
-        return StringUtils.isBlank(version) ? null : UNSTABLE_VERSION_PATTERN.matcher(version).replaceAll("");
+        String suffix = extractSuffix(version);
+        if (isBlank(version) || isBlank(suffix)) {
+            return version;
+        } else {
+            int suffixIndex = version.lastIndexOf(suffix) - 1;
+            if (suffixIndex > 0) {
+                return version.substring(0, suffixIndex);
+            } else {
+                return null;
+            }
+        }
     }
 
     public static void sort(List<String> versions) {
@@ -207,7 +222,7 @@ public class JmixVersionUtils {
      * </ul>
      */
     private static String getVersionPartByIndex(String version, int partIndex) {
-        if (StringUtils.isBlank(version)) {
+        if (isBlank(version)) {
             return null;
         }
 

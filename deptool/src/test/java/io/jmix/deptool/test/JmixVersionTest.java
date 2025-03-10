@@ -18,6 +18,7 @@ public class JmixVersionTest {
     public void testVersionParsing() {
         String snapshotVersion = "2.5.999-SNAPSHOT";
         String rcVersion = "2.5.0-RC";
+        String rc2Version = "2.5.0-RC2";
         String releaseVersion = "2.5.0";
 
         var supportedVersions = List.of(
@@ -27,7 +28,7 @@ public class JmixVersionTest {
                 snapshotVersion,
                 rcVersion,
                 "2.5.0.1-RC",
-                "2.5.0-RC2"
+                rc2Version
         );
         assertDoesNotThrow(() -> supportedVersions.forEach(JmixVersion::from));
 
@@ -35,13 +36,22 @@ public class JmixVersionTest {
         assertEquals(snapshotVersion, snapshot.versionString());
         assertEquals("2.5.999", snapshot.versionString(false));
         assertNotEquals(snapshotVersion, snapshot.versionString(false));
+        assertEquals("2.5.999", JmixVersionUtils.getStableVersion(snapshotVersion));
         assertTrue(snapshot.isSnapshot() && !snapshot.isStable() && !snapshot.isRC());
 
         JmixVersion rc = JmixVersion.from(rcVersion);
         assertEquals(rcVersion, rc.versionString());
         assertEquals("2.5.0", rc.versionString(false));
+        assertEquals("-RC", rc.suffix());
         assertNotEquals(rcVersion, rc.versionString(false));
         assertTrue(rc.isRC() && !rc.isStable() && !rc.isSnapshot());
+
+        JmixVersion rc2 = JmixVersion.from(rc2Version);
+        assertEquals(rc2Version, rc2.versionString());
+        assertEquals("2.5.0", rc2.versionString(false));
+        assertEquals("-RC2", rc2.suffix());
+        assertNotEquals(rc2Version, rc2.versionString(false));
+        assertTrue(rc2.isRC() && !rc2.isStable() && !rc2.isSnapshot());
 
         JmixVersion release = JmixVersion.from(releaseVersion);
         assertEquals(releaseVersion, release.versionString());
