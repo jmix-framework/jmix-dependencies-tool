@@ -60,13 +60,20 @@ public enum AdditionalDependencyType {
      * Find the latest version in minor range.
      * For example, we have 2.5.0, 2.5.5, 2.6.0, 3.0.0 versions, then:
      * <ul>
-     *     <li>1.5.0 -> null</li>
+     *     <li>1.5.0 and earlier -> null</li>
+     *     <br>
      *     <li>2.0.0 -> null</li>
+     *     <br>
      *     <li>2.5.0 -> 2.5.5</li>
      *     <li>2.5.2 -> 2.5.5</li>
      *     <li>2.5.9 -> 2.5.5</li>
-     *     <li>3.0.0-> 3.0.0</li>
-     *     <li>3.1.0 -> null</li>
+     *     <li>2.5.999-SNAPSHOT -> 2.5.5</li>
+     *     <br>
+     *     <li>3.0.0 -> 3.0.0</li>
+     *     <li>3.0.1 -> 3.0.0</li>
+     *     <li>3.0.999-SNAPSHOT -> 3.0.0</li>
+     *     <br>
+     *     <li>3.1.0 and later -> null</li>
      * <ul/>
      */
     private String findLatestVersionForMinor(JmixVersion jmixVersion) {
@@ -76,7 +83,11 @@ public enum AdditionalDependencyType {
                 return null;
             }
 
-            File resourcesDir = Paths.get(resourcesDirUrl.toURI()).toFile();
+            File resourcesDir = FileUtils.toFile(resourcesDirUrl);
+            if (resourcesDir == null) {
+                return null;
+            }
+
             Collection<File> children = FileUtils.listFilesAndDirs(resourcesDir,
                     new RegexFileFilter("ignoreAll"),
                     new RegexFileFilter("[\\d.-]*"));
