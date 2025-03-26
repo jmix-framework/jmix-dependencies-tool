@@ -27,7 +27,7 @@ public class JmixGradleClient {
 
     public ProjectConnection getProjectConnection() {
         GradleConnector gradleConnector = GradleConnector.newConnector().forProjectDirectory(new File(projectDir));
-        if (StringUtils.isBlank(gradleVersion)) {
+        if (StringUtils.isNotBlank(gradleVersion)) {
             gradleConnector.useGradleVersion(gradleVersion);
         }
 
