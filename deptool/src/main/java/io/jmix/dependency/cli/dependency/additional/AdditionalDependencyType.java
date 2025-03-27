@@ -2,16 +2,14 @@ package io.jmix.dependency.cli.dependency.additional;
 
 import io.jmix.dependency.cli.version.JmixVersion;
 import io.jmix.dependency.cli.version.JmixVersionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.commons.vfs2.*;
+import org.apache.commons.vfs2.filter.RegexFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Paths;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,23 +76,36 @@ public enum AdditionalDependencyType {
      */
     private String findLatestVersionForMinor(JmixVersion jmixVersion) {
         try {
-            URL resourcesDirUrl = getClassLoader().getResource(getVersionsDir());
+            String versionsDir = getVersionsDir();
+            URL resourcesDirUrl = getClassLoader().getResource(versionsDir);
             if (resourcesDirUrl == null) {
+                log.warn("Directory {} not found", versionsDir);
                 return null;
             }
 
-            File resourcesDir = FileUtils.toFile(resourcesDirUrl);
-            if (resourcesDir == null) {
+            FileSystemManager fsManager = VFS.getManager();
+            if (fsManager == null) {
+                log.warn("Can not resolve {}, work with file system is unavailable", FileSystemManager.class.getCanonicalName());
                 return null;
             }
 
-            Collection<File> children = FileUtils.listFilesAndDirs(resourcesDir,
-                    new RegexFileFilter("ignoreAll"),
-                    new RegexFileFilter("[\\d.-]*"));
+            FileObject resourceDirFileObject = fsManager.resolveFile(resourcesDirUrl);
+            if (resourceDirFileObject == null) {
+                log.warn("Can not resolve {} to {}", resourcesDirUrl, FileObject.class.getCanonicalName());
+                return null;
+            }
 
-            List<String> latestVersion = children.stream()
-                    .filter(File::isDirectory)
-                    .map(File::getName)
+            FileFilterSelector selector = new FileFilterSelector(new RegexFileFilter("[\\d.-]*"));
+
+            List<String> latestVersion = Arrays.stream(resourceDirFileObject.findFiles(selector))
+                    .filter(it -> {
+                        try {
+                            return it.isFolder();
+                        } catch (FileSystemException e) {
+                            return false;
+                        }
+                    })
+                    .map(it -> it.getName().getBaseName())
                     .filter(name -> name.startsWith(jmixVersion.majorMinor()))
                     .collect(Collectors.toList());
 
