@@ -62,7 +62,7 @@
         <dependency>io.jmix.flowui:jmix-flowui-themes</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-data</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-data-starter</dependency>
-        <dependency>io.jmix.flowui:jmix-flowui-devserver</dependency>
+        <dependency scope="JVM">io.jmix.flowui:jmix-flowui-devserver</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-test-assist</dependency>
 
         <dependency>io.jmix.fullcalendar:jmix-fullcalendar-flowui</dependency>

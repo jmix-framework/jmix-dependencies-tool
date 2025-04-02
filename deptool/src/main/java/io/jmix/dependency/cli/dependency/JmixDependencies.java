@@ -1,8 +1,10 @@
 package io.jmix.dependency.cli.dependency;
 
 import io.jmix.dependency.cli.version.JmixVersionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
+import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
@@ -15,47 +17,73 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+
 public class JmixDependencies {
 
     private static final Logger log = LoggerFactory.getLogger(JmixDependencies.class);
 
-    public static Set<String> getVersionSpecificJmixDependencies(String jmixVersion, boolean resolveCommercialAddons) {
+    public static Set<String> getVersionSpecificJmixDependencies(DependencyScope scope, String jmixVersion, boolean resolveCommercialAddons) {
         String minorJmixVersion = JmixVersionUtils.getMinorVersion(jmixVersion);
-        Set<String> dependencies = _getVersionSpecificDependencies(minorJmixVersion, resolveCommercialAddons);
-        dependencies.addAll(_getVersionSpecificDependencies(jmixVersion, resolveCommercialAddons));
+        Set<String> dependencies = _getVersionSpecificDependencies(scope, minorJmixVersion, resolveCommercialAddons);
+        dependencies.addAll(_getVersionSpecificDependencies(scope, jmixVersion, resolveCommercialAddons));
         //if there are no files for the given dependency version then use the default file (dependencies-default.xml)
         if (dependencies.isEmpty()) {
-            dependencies.addAll(_getVersionSpecificDependencies("default", resolveCommercialAddons));
+            dependencies.addAll(_getVersionSpecificDependencies(scope, "default", resolveCommercialAddons));
         }
         return dependencies;
     }
 
-    private static Set<String> _getVersionSpecificDependencies(String version, boolean resolveCommercialAddons) {
+    private static Set<String> _getVersionSpecificDependencies(DependencyScope scope, String version, boolean resolveCommercialAddons) {
         try (InputStream is = JmixDependencies.class.getResourceAsStream("/jmix-dependencies/dependencies-" + version + ".xml")) {
             if (is == null) {
                 log.debug("Dependencies file for version {} not found", version);
                 return new HashSet<>();
             }
+
             log.debug("Parsing dependencies file: {}", version + ".xml");
             SAXReader reader = new SAXReader();
             Document document = reader.read(is);
-            Set<String> dependencies = new HashSet<>();
             List<Node> nodes = document.selectNodes("/dependencies/open-source-dependencies/dependency");
-            Set<String> openSourceDependencies = nodes.stream()
+            Set<String> dependencies = nodes.stream()
+                    .filter(node -> filterByScope(node, scope))
                     .map(Node::getText)
                     .collect(Collectors.toSet());
-            dependencies.addAll(openSourceDependencies);
+
             if (resolveCommercialAddons) {
                 List<Node> commercialNodes = document.selectNodes("/dependencies/commercial-dependencies/dependency");
                 Set<String> commercialDependencies = commercialNodes.stream()
-                        .map(Node::getText)
-                        .collect(Collectors.toSet());
+                        .filter(node -> filterByScope(node, scope))
+                                .map(Node::getText)
+                                .collect(Collectors.toSet());
                 dependencies.addAll(commercialDependencies);
             }
+
             return dependencies;
         } catch (IOException | DocumentException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static boolean filterByScope(Node node, DependencyScope scope) {
+        if (scope == DependencyScope.ALL) {
+            return true;
+        }
+
+        if (node instanceof Element element) {
+            String nodeScope = element.attributeValue("scope");
+            if (StringUtils.isBlank(nodeScope)) {
+                return true;
+            }
+
+            return switch (scope) {
+                case JVM -> equalsIgnoreCase(DependencyScope.JVM.name(), nodeScope);
+                case NPM -> equalsIgnoreCase(DependencyScope.NPM.name(), nodeScope);
+                default -> true;
+            };
+        }
+
+        return true;
     }
 
 }
