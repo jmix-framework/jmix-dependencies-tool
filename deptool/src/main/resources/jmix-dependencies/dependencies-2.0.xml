@@ -99,15 +99,6 @@
         <dependency>io.jmix.translations:jmix-translations-el</dependency>
         <dependency>io.jmix.translations:jmix-translations-ckb</dependency>
         <dependency>io.jmix.translations:jmix-translations-nl</dependency>
-
-        <dependency>io.jmix.translations:jmix-translations-fr</dependency>
-        <dependency>io.jmix.translations:jmix-translations-ru</dependency>
-        <dependency>io.jmix.translations:jmix-translations-de</dependency>
-        <dependency>io.jmix.translations:jmix-translations-zh-cn</dependency>
-        <dependency>io.jmix.translations:jmix-translations-ro</dependency>
-        <dependency>io.jmix.translations:jmix-translations-el</dependency>
-        <dependency>io.jmix.translations:jmix-translations-ckb</dependency>
-        <dependency>io.jmix.translations:jmix-translations-nl</dependency>
         <dependency>io.jmix.translations:jmix-translations-it</dependency>
 
         <!-- Additional dependencies -->
