@@ -2,6 +2,7 @@ package io.jmix.dependency.cli.command;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import io.jmix.dependency.cli.dependency.DependencyScope;
 import io.jmix.dependency.cli.dependency.JmixDependencies;
 import io.jmix.dependency.cli.gradle.JmixGradleClient;
 import io.jmix.dependency.cli.version.JmixVersion;
@@ -17,7 +18,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
+import static io.jmix.dependency.cli.dependency.DependencyScope.NPM;
+import static io.jmix.dependency.cli.dependency.JmixDependencies.getVersionSpecificJmixDependencies;
 import static io.jmix.dependency.cli.dependency.additional.AdditionalDependencyFileType.PACKAGE_LOCK;
 
 @Parameters(commandDescription = "Resolves Npm dependencies")
@@ -130,7 +134,8 @@ public class ResolveNpmCommand implements BaseCommand {
     protected void resolveDependencies(JmixGradleClient jmixGradleClient) {
         log.info("-= Resolve dependencies =-");
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
-            List<String> dependencies = new ArrayList<>(JmixDependencies.getVersionSpecificJmixDependencies(jmixVersion, resolveCommercialAddons));
+            Set<String> jmixDependencies = getVersionSpecificJmixDependencies(NPM, jmixVersion, resolveCommercialAddons);
+            List<String> dependencies = new ArrayList<>(jmixDependencies);
             dependencies.sort(Comparator.naturalOrder());
 
             log.info("Resolve...");

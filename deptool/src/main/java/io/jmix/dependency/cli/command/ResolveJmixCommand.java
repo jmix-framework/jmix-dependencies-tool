@@ -2,6 +2,7 @@ package io.jmix.dependency.cli.command;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import io.jmix.dependency.cli.dependency.DependencyScope;
 import io.jmix.dependency.cli.dependency.JmixDependencies;
 import io.jmix.dependency.cli.gradle.JmixGradleClient;
 import io.jmix.dependency.cli.version.JmixVersion;
@@ -13,6 +14,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+
+import static io.jmix.dependency.cli.dependency.DependencyScope.JVM;
+import static io.jmix.dependency.cli.dependency.JmixDependencies.getVersionSpecificJmixDependencies;
 
 @Parameters(commandDescription = "Resolves Jmix dependencies")
 public class ResolveJmixCommand implements BaseCommand {
@@ -74,8 +79,8 @@ public class ResolveJmixCommand implements BaseCommand {
 
         JmixGradleClient jmixGradleClient = new JmixGradleClient(resolverProjectPath, gradleUserHome, gradleVersion);
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
-            List<String> dependencies = new ArrayList<>();
-            dependencies.addAll(JmixDependencies.getVersionSpecificJmixDependencies(jmixVersion, resolveCommercialAddons));
+            Set<String> jmixDependencies = getVersionSpecificJmixDependencies(JVM, jmixVersion, resolveCommercialAddons);
+            List<String> dependencies = new ArrayList<>(jmixDependencies);
             dependencies.sort(Comparator.naturalOrder());
             for (String dependency : dependencies) {
                 log.info("Resolving dependency: {}", dependency);
