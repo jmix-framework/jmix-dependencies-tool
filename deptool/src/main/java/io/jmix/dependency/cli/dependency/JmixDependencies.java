@@ -23,18 +23,30 @@ public class JmixDependencies {
 
     private static final Logger log = LoggerFactory.getLogger(JmixDependencies.class);
 
-    public static Set<String> getVersionSpecificJmixDependencies(DependencyScope scope, String jmixVersion, boolean resolveCommercialAddons) {
+    public static Set<String> getVersionSpecificJmixDependencies(DependencyScope scope,
+                                                                 String jmixVersion,
+                                                                 boolean resolveCommercialAddons) {
+        return getVersionSpecificJmixDependencies(scope, jmixVersion, resolveCommercialAddons, null);
+    }
+
+    public static Set<String> getVersionSpecificJmixDependencies(DependencyScope scope,
+                                                                 String jmixVersion,
+                                                                 boolean resolveCommercialAddons,
+                                                                 SubscriptionPlan plan) {
         String minorJmixVersion = JmixVersionUtils.getMinorVersion(jmixVersion);
-        Set<String> dependencies = _getVersionSpecificDependencies(scope, minorJmixVersion, resolveCommercialAddons);
-        dependencies.addAll(_getVersionSpecificDependencies(scope, jmixVersion, resolveCommercialAddons));
+        Set<String> dependencies = _getVersionSpecificDependencies(scope, minorJmixVersion, resolveCommercialAddons, plan);
+        dependencies.addAll(_getVersionSpecificDependencies(scope, jmixVersion, resolveCommercialAddons, plan));
         //if there are no files for the given dependency version then use the default file (dependencies-default.xml)
         if (dependencies.isEmpty()) {
-            dependencies.addAll(_getVersionSpecificDependencies(scope, "default", resolveCommercialAddons));
+            dependencies.addAll(_getVersionSpecificDependencies(scope, "default", resolveCommercialAddons, plan));
         }
         return dependencies;
     }
 
-    private static Set<String> _getVersionSpecificDependencies(DependencyScope scope, String version, boolean resolveCommercialAddons) {
+    private static Set<String> _getVersionSpecificDependencies(DependencyScope scope,
+                                                               String version,
+                                                               boolean resolveCommercialAddons,
+                                                               SubscriptionPlan plan) {
         try (InputStream is = JmixDependencies.class.getResourceAsStream("/jmix-dependencies/dependencies-" + version + ".xml")) {
             if (is == null) {
                 log.debug("Dependencies file for version {} not found", version);
@@ -51,11 +63,17 @@ public class JmixDependencies {
                     .collect(Collectors.toSet());
 
             if (resolveCommercialAddons) {
+                SubscriptionPlan effectivePlan = plan == null ? SubscriptionPlan.BPM : plan;
+
                 List<Node> commercialNodes = document.selectNodes("/dependencies/commercial-dependencies/dependency");
                 Set<String> commercialDependencies = commercialNodes.stream()
                         .filter(node -> filterByScope(node, scope))
-                                .map(Node::getText)
-                                .collect(Collectors.toSet());
+                        .map(Node::getText)
+                        .filter(dependency -> {
+                            MavenCoordinates mavenCoordinates = MavenCoordinates.parse(dependency);
+                            return effectivePlan.isDependencyAllowed(mavenCoordinates);
+                        })
+                        .collect(Collectors.toSet());
                 dependencies.addAll(commercialDependencies);
             }
 

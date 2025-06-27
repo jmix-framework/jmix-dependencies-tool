@@ -2,8 +2,7 @@ package io.jmix.dependency.cli.command;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import io.jmix.dependency.cli.dependency.DependencyScope;
-import io.jmix.dependency.cli.dependency.JmixDependencies;
+import io.jmix.dependency.cli.dependency.SubscriptionPlan;
 import io.jmix.dependency.cli.gradle.JmixGradleClient;
 import io.jmix.dependency.cli.version.JmixVersion;
 import org.gradle.tooling.ProjectConnection;
@@ -57,7 +56,13 @@ public class ResolveJmixCommand implements BaseCommand {
             "If credentials are not required then just an URL must be passed", order = 9)
     private List<String> repositories;
 
+    @Parameter(names = {"--commercial-subscription-plan"},
+            description = "Type of commercial subscription plan - 'enterprise' or 'bpm' (default). Relevant only if '--resolve-commercial-addons' is present",
+            order = 10)
+    private String commercialSubscriptionPlan;
+
     private JmixVersion parsedVersion;
+    private SubscriptionPlan subscriptionPlan;
 
     @Override
     public void run() {
@@ -72,14 +77,18 @@ public class ResolveJmixCommand implements BaseCommand {
         if (gradleUserHome == null) {
             gradleUserHome = DefaultPaths.getDefaultGradleUserHome();
         }
+        subscriptionPlan = SubscriptionPlan.fromId(this.commercialSubscriptionPlan);
+
         log.info("Jmix version: {}", jmixVersion);
         log.info("Jmix plugin version: {}", jmixPluginVersion);
+        log.info("Resolve commercial addons: {}", resolveCommercialAddons);
+        log.info("Jmix commercial subscription plan: {}", subscriptionPlan);
         log.info("Resolver project path: {}", Paths.get(resolverProjectPath).toAbsolutePath().normalize());
         log.info("Gradle user home directory: {}", Paths.get(gradleUserHome).toAbsolutePath().normalize());
 
         JmixGradleClient jmixGradleClient = new JmixGradleClient(resolverProjectPath, gradleUserHome, gradleVersion);
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
-            Set<String> jmixDependencies = getVersionSpecificJmixDependencies(JVM, jmixVersion, resolveCommercialAddons);
+            Set<String> jmixDependencies = getVersionSpecificJmixDependencies(JVM, jmixVersion, resolveCommercialAddons, subscriptionPlan);
             List<String> dependencies = new ArrayList<>(jmixDependencies);
             dependencies.sort(Comparator.naturalOrder());
             for (String dependency : dependencies) {
