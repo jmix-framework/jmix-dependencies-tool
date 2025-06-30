@@ -66,6 +66,7 @@ Command options:
 * `--jmix-plugin-version` - Jmix plugin version. If not defined the value from the `--jmix-version` will be used.
 * `--resolve-commercial-addons` - whether to resolve Jmix commercial add-ons. The `--jmix-license-key` option must be provided in this case. By default, only open-source modules dependencies are resolved.
 * `--jmix-license-key` - your Jmix license key. This option is required if you resolve Jmix commercial add-ons.
+* `--commercial-subscription-plan` - Type of your commercial subscription plan - 'enterprise' or 'bpm' (default). Relevant only if `--resolve-commercial-addons` is present.
 * `--gradle-user-home` - gradle user home directory. It is the directory where dependencies will be downloaded to by Gradle. This directory must distinct from the user home of the gradle installed on your machine in order to contain only dependencies required for Jmix. The default value is `../gradle-home`.
 * `--resolver-project` - a path to a special gradle project used for dependencies resolution. This project is delivered within the distribution bundle. The default value is `../resolver`.
 * `--gradle-version` - version of Gradle installation that will be used.
@@ -120,6 +121,7 @@ Command options:
 * `--jmix-plugin-version` - Jmix plugin version. If not defined the value from the `--jmix-version` will be used.
 * `--resolve-commercial-addons` - whether to resolve Jmix commercial add-ons. The `--jmix-license-key` option must be provided in this case. By default, only open-source modules dependencies are resolved.
 * `--jmix-license-key` - your Jmix license key. This option is required if you resolve Jmix commercial add-ons.
+* `--commercial-subscription-plan` - Type of your commercial subscription plan - 'enterprise' or 'bpm' (default). Relevant only if `--resolve-commercial-addons` is present.
 * `--gradle-user-home` - gradle user home directory. It is the directory where dependencies will be downloaded to by Gradle. This directory must distinct from the user home of the gradle installed on your machine in order to contain only dependencies required for Jmix. The default value is `../gradle-home`.
 * `--resolver-project` - a path to a special gradle project used for dependencies resolution. This project is delivered within the distribution bundle. The default value is `../npm-resolver`.
 * `--gradle-version` - version of Gradle installation that will be used.
