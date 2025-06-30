@@ -53,9 +53,6 @@
         <dependency>io.jmix.email:jmix-email-starter</dependency>
         <dependency>io.jmix.email:jmix-email-flowui-starter</dependency>
 
-        <dependency>io.jmix.emailtemplates:jmix-emailtemplates</dependency>
-        <dependency>io.jmix.emailtemplates:jmix-emailtemplates-starter</dependency>
-
         <dependency>io.jmix.flowui:jmix-flowui</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-starter</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-kit</dependency>
@@ -81,6 +78,8 @@
 
         <dependency>io.jmix.localfs:jmix-localfs</dependency>
         <dependency>io.jmix.localfs:jmix-localfs-starter</dependency>
+
+        <dependency>io.jmix.masquerade:jmix-masquerade</dependency>
 
         <dependency>io.jmix.messagetemplates:jmix-messagetemplates</dependency>
         <dependency>io.jmix.messagetemplates:jmix-messagetemplates-starter</dependency>
