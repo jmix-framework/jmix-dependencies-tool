@@ -59,6 +59,8 @@
         <dependency>io.jmix.flowui:jmix-flowui-themes</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-data</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-data-starter</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-restds</dependency>
+        <dependency>io.jmix.flowui:jmix-flowui-restds-starter</dependency>
         <dependency scope="JVM">io.jmix.flowui:jmix-flowui-devserver</dependency>
         <dependency>io.jmix.flowui:jmix-flowui-test-assist</dependency>
 
@@ -216,6 +218,11 @@
 
         <dependency>io.jmix.uiconstraints:jmix-uiconstraints</dependency>
         <dependency>io.jmix.uiconstraints:jmix-uiconstraints-starter</dependency>
+
+        <dependency>io.jmix.vcc:vaadin-commercial-components</dependency>
+        <dependency>io.jmix.vcc:vaadin-commercial-components-devserver-kit</dependency>
+        <dependency>io.jmix.vcc:vaadin-commercial-components-kit</dependency>
+        <dependency>io.jmix.vcc:vaadin-commercial-components-starter</dependency>
 
         <dependency>io.jmix.webdav:jmix-webdav</dependency>
         <dependency>io.jmix.webdav:jmix-webdav-starter</dependency>

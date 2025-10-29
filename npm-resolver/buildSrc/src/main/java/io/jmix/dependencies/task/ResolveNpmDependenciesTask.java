@@ -11,16 +11,9 @@ import java.util.List;
 
 public class ResolveNpmDependenciesTask extends DefaultTask {
 
-    private List<String> externalDependencies;
-
     private List<String> repositories;
 
     private String dependencyConfiguration;
-
-    @Option(option = "dependency", description = "Maven coordinates of the dependency to be resolved, e.g. io.jmix.core:jmix-core:1.4.1")
-    public void setExternalDependencies(List<String> externalDependencies) {
-        this.externalDependencies = externalDependencies;
-    }
 
     @Option(option = "dependency-configuration", description = "Gradle configuration name for resolvable dependency, e.g. implementation. " +
             "Implementation is used by default.")
@@ -37,7 +30,6 @@ public class ResolveNpmDependenciesTask extends DefaultTask {
     @TaskAction
     public void resolveDependencies() {
         addRepositories();
-        addExternalDependencies();
         resolveProjectConfigurations();
     }
 
@@ -48,21 +40,7 @@ public class ResolveNpmDependenciesTask extends DefaultTask {
                 .forEach(Configuration::resolve);
     }
 
-    private void addExternalDependencies() {
-        Logger logger = getLogger();
-        Project project = getProject();
-        if (externalDependencies != null) {
-            logger.info("Dependencies: {}", externalDependencies);
-            String configurationName = dependencyConfiguration != null ? dependencyConfiguration : "implementation";
-            if (project.getConfigurations().findByName(configurationName) == null) {
-                project.getConfigurations().create(configurationName);
-            }
-            externalDependencies.forEach(dependency -> {
-                project.getDependencies().add(configurationName, dependency);
-            });
-        }
-    }
-
+    //TODO Move to init script
     private void addRepositories() {
         Project project = getProject();
         Logger logger = getLogger();

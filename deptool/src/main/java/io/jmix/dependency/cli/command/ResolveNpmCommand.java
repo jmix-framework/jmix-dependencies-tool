@@ -24,7 +24,7 @@ import static io.jmix.dependency.cli.dependency.JmixDependencies.getVersionSpeci
 import static io.jmix.dependency.cli.dependency.additional.AdditionalDependencyFileType.PACKAGE_LOCK;
 
 @Parameters(commandDescription = "Resolves Npm dependencies")
-public class ResolveNpmCommand implements BaseCommand {
+public class ResolveNpmCommand extends AbstractGradleExecutionCommand {
 
     private static final Logger log = LoggerFactory.getLogger(ResolveNpmCommand.class);
 
@@ -71,6 +71,17 @@ public class ResolveNpmCommand implements BaseCommand {
 
     @Override
     public void run() {
+        initParameters();
+
+        JmixGradleClient jmixGradleClient = new JmixGradleClient(resolverProjectPath, gradleUserHome, gradleVersion);
+
+        vaadinClean(jmixGradleClient);
+        copyStubPackageLock();
+        resolveDependencies(jmixGradleClient);
+        resolveAdditionalDependencies();
+    }
+
+    protected void initParameters() {
         parsedVersion = JmixVersion.from(jmixVersion);
 
         if (jmixPluginVersion == null) {
@@ -90,13 +101,6 @@ public class ResolveNpmCommand implements BaseCommand {
         log.info("Jmix commercial subscription plan: {}", subscriptionPlan);
         log.info("Resolver project path: {}", Paths.get(resolverProjectPath).toAbsolutePath().normalize());
         log.info("Gradle user home directory: {}", Paths.get(gradleUserHome).toAbsolutePath().normalize());
-
-        JmixGradleClient jmixGradleClient = new JmixGradleClient(resolverProjectPath, gradleUserHome, gradleVersion);
-
-        vaadinClean(jmixGradleClient);
-        copyStubPackageLock();
-        resolveDependencies(jmixGradleClient);
-        resolveAdditionalDependencies();
     }
 
     protected void vaadinClean(JmixGradleClient jmixGradleClient) {
@@ -104,17 +108,8 @@ public class ResolveNpmCommand implements BaseCommand {
 
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
             List<String> taskArguments = new ArrayList<>();
-            taskArguments.add("-PjmixVersion=" + jmixVersion);
-            taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
-            if (jmixLicenseKey != null) {
-                taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
-            }
-            if (publicRepository != null) {
-                taskArguments.add("-PjmixPublicRepository=" + publicRepository);
-            }
-            if (premiumRepository != null) {
-                taskArguments.add("-PjmixPremiumRepository=" + premiumRepository);
-            }
+            setupJmixParameters(taskArguments);
+
             if (repositories != null) {
                 // Generate additional repositories on build.gradle side because 'vaadinClean' task
                 // can't accept --repository parameter like custom tasks
@@ -142,38 +137,53 @@ public class ResolveNpmCommand implements BaseCommand {
     protected void resolveDependencies(JmixGradleClient jmixGradleClient) {
         log.info("-= Resolve dependencies =-");
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
-            Set<String> jmixDependencies = getVersionSpecificJmixDependencies(NPM, jmixVersion, resolveCommercialAddons, subscriptionPlan);
-            List<String> dependencies = new ArrayList<>(jmixDependencies);
-            dependencies.sort(Comparator.naturalOrder());
-
-            log.info("Resolve...");
             List<String> taskArguments = new ArrayList<>();
-            for (String dependency : dependencies) {
-                taskArguments.add("--dependency");
-                taskArguments.add(dependency);
-            }
-            taskArguments.add("-PjmixVersion=" + jmixVersion);
-            taskArguments.add("-PjmixPluginVersion=" + jmixPluginVersion);
-            if (jmixLicenseKey != null) {
-                taskArguments.add("-PjmixLicenseKey=" + jmixLicenseKey);
-            }
-            if (publicRepository != null) {
-                taskArguments.add("-PjmixPublicRepository=" + publicRepository);
-            }
-            if (premiumRepository != null) {
-                taskArguments.add("-PjmixPremiumRepository=" + premiumRepository);
-            }
-            if (repositories != null) {
-                for (String repository : repositories) {
-                    taskArguments.add("--repository");
-                    taskArguments.add(repository);
-                }
-            }
+
+            setupInitScript(taskArguments);
+            setupJmixParameters(taskArguments);
+            setupRepositories(taskArguments);
+            setupDependencies(taskArguments);
+            setupUtilityOptions(taskArguments);
+
             String result = jmixGradleClient.runTask(connection,
                     "resolveNpmDependencies",
                     taskArguments);
             log.info(result);
         }
+    }
+
+    protected void setupInitScript(List<String> taskArguments) {
+        addGradleTaskOption(taskArguments, "init-script", "inject.gradle");
+    }
+
+    protected void setupJmixParameters(List<String> taskArguments) {
+        addProjectParameter(taskArguments, "jmixVersion", jmixVersion);
+        addProjectParameter(taskArguments, "jmixPluginVersion", jmixPluginVersion);
+        addProjectParameter(taskArguments, "jmixLicenseKey", jmixLicenseKey);
+        addProjectParameter(taskArguments, "jmixPublicRepository", publicRepository);
+        addProjectParameter(taskArguments, "jmixPremiumRepository", premiumRepository);
+    }
+
+    protected void setupRepositories(List<String> taskArguments) {
+        if (repositories != null) {
+            for (String repository : repositories) {
+                addGradleTaskOption(taskArguments, "repository", repository);
+            }
+        }
+    }
+
+    protected void setupDependencies(List<String> taskArguments) {
+        Set<String> jmixDependencies = getVersionSpecificJmixDependencies(NPM, jmixVersion, resolveCommercialAddons, subscriptionPlan);
+        List<String> dependencies = new ArrayList<>(jmixDependencies);
+        dependencies.sort(Comparator.naturalOrder());
+
+        String allDependencies = String.join(",", dependencies);
+        addProjectParameter(taskArguments, "externalDependencies", allDependencies);
+    }
+
+    protected void setupUtilityOptions(List<String> taskArguments) {
+        taskArguments.add("--stacktrace");
+        //todo add CLI parameter to provide gradle verbosity level: --info, --debug.
     }
 
     private void resolveAdditionalDependencies() {

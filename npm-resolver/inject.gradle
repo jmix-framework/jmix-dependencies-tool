@@ -1,0 +1,10 @@
+allprojects {
+    def providedDependencies = gradle.startParameter.projectProperties['externalDependencies']?.split(',') ?: []
+
+    afterEvaluate {
+        providedDependencies.each { dep ->
+            println "[INIT] Add dependency: $dep"
+            dependencies.add("implementation", dep)
+        }
+    }
+}
