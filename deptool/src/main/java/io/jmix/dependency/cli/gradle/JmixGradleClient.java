@@ -46,4 +46,14 @@ public class JmixGradleClient {
 
         return bos.toString();
     }
+
+    public void runTaskStandardOutput(ProjectConnection connection, String taskName, Iterable<String> taskArguments) {
+        connection.newBuild()
+                .withArguments(taskName)
+                .addArguments(taskArguments)
+                .addArguments("--gradle-user-home", gradleUserHomeDir)
+                .setStandardOutput(System.out)
+                .setStandardError(System.err)
+                .run();
+    }
 }

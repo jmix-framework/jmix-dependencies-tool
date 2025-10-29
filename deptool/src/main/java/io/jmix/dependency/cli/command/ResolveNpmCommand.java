@@ -104,7 +104,7 @@ public class ResolveNpmCommand extends AbstractGradleExecutionCommand {
     }
 
     protected void vaadinClean(JmixGradleClient jmixGradleClient) {
-        log.info("Vaadin clean...");
+        log.info("-= Vaadin clean =-");
 
         try (ProjectConnection connection = jmixGradleClient.getProjectConnection()) {
             List<String> taskArguments = new ArrayList<>();
@@ -116,10 +116,7 @@ public class ResolveNpmCommand extends AbstractGradleExecutionCommand {
                 String joinedRepos = String.join(",", repositories);
                 taskArguments.add("-PextraRepositories=" + joinedRepos);
             }
-            String result = jmixGradleClient.runTask(connection,
-                    "vaadinClean",
-                    taskArguments);
-            log.info(result);
+            jmixGradleClient.runTask(connection, "vaadinClean", taskArguments);
         }
     }
 
@@ -145,10 +142,7 @@ public class ResolveNpmCommand extends AbstractGradleExecutionCommand {
             setupDependencies(taskArguments);
             setupUtilityOptions(taskArguments);
 
-            String result = jmixGradleClient.runTask(connection,
-                    "resolveNpmDependencies",
-                    taskArguments);
-            log.info(result);
+            jmixGradleClient.runTaskStandardOutput(connection, "resolveNpmDependencies", taskArguments);
         }
     }
 
