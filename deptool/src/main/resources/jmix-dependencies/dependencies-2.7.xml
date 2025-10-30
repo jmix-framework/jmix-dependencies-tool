@@ -219,11 +219,6 @@
         <dependency>io.jmix.uiconstraints:jmix-uiconstraints</dependency>
         <dependency>io.jmix.uiconstraints:jmix-uiconstraints-starter</dependency>
 
-        <dependency>io.jmix.vcc:vaadin-commercial-components</dependency>
-        <dependency>io.jmix.vcc:vaadin-commercial-components-devserver-kit</dependency>
-        <dependency>io.jmix.vcc:vaadin-commercial-components-kit</dependency>
-        <dependency>io.jmix.vcc:vaadin-commercial-components-starter</dependency>
-
         <dependency>io.jmix.webdav:jmix-webdav</dependency>
         <dependency>io.jmix.webdav:jmix-webdav-starter</dependency>
         <dependency>io.jmix.webdav:jmix-webdav-rest</dependency>
