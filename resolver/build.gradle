@@ -34,6 +34,9 @@ repositories {
     maven {
         url publicRepoUrl
     }
+    maven {
+        url 'https://build.shibboleth.net/nexus/content/repositories/releases' // for org.opensaml libs
+    }
     if (project.hasProperty('jmixLicenseKey')) {
         String licenseKey = project.property('jmixLicenseKey')
         def premiumRepoUrl = project.findProperty('jmixPremiumRepository') ?: 'https://global.repo.jmix.io/repository/premium'
