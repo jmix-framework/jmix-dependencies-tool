@@ -160,9 +160,8 @@ public class ResolveNpmCommand extends AbstractGradleExecutionCommand {
 
     protected void setupRepositories(List<String> taskArguments) {
         if (repositories != null) {
-            for (String repository : repositories) {
-                addGradleTaskOption(taskArguments, "repository", repository);
-            }
+            String allExtraRepos = String.join(",", repositories);
+            addProjectParameter(taskArguments, "extraRepositories", allExtraRepos);
         }
     }
 

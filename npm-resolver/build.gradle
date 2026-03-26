@@ -59,7 +59,7 @@ repositories {
     // Add extra repositories for the vaadinClean task (unable to add repository to custom task via tooling API)
     if (project.hasProperty('extraRepositories')) {
         def extraReposValue = project.property('extraRepositories')
-        extraReposValue.split(',').each { repoData ->
+        extraReposValue.toString().split(',').each { repoData ->
             String[] repoDataItems = repoData.split("\\|")
             if(repoDataItems.size() == 1) {
                 String repoUrl = repoDataItems[0].trim()
