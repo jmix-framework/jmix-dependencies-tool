@@ -158,6 +158,8 @@
 
         <dependency>io.jmix.translations:jmix-translations-ar</dependency>
         <dependency>io.jmix.translations:jmix-translations-ckb</dependency>
+        <dependency>io.jmix.translations:jmix-translations-cs</dependency>
+        <dependency>io.jmix.translations:jmix-translations-da</dependency>
         <dependency>io.jmix.translations:jmix-translations-de</dependency>
         <dependency>io.jmix.translations:jmix-translations-el</dependency>
         <dependency>io.jmix.translations:jmix-translations-es</dependency>
@@ -169,6 +171,7 @@
         <dependency>io.jmix.translations:jmix-translations-ru</dependency>
         <dependency>io.jmix.translations:jmix-translations-tr</dependency>
         <dependency>io.jmix.translations:jmix-translations-zh-cn</dependency>
+        <dependency>io.jmix.translations:jmix-translations-zh-tw</dependency>
 
         <!-- Additional dependencies -->
         <dependency>org.springframework.boot:spring-boot-starter-web</dependency>
