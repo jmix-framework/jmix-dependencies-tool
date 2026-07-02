@@ -1,0 +1,36 @@
+// =====================================================================================
+// Deptool resolution project (generated at runtime) - checkpoint 2.0.
+// This template will be applied for all versions till the next checkpoint
+//
+// Project SHAPE only; the shared resolution mechanism (dependencies, iso configs, resolveAll) lives in
+// resolve-support.gradle (applied at the end).
+// =====================================================================================
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        if (project.hasProperty('jmixPluginVersion')) {
+            classpath "io.jmix.gradle:jmix-gradle-plugin:${project.findProperty('jmixPluginVersion')}"
+        }
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'io.jmix'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.vaadin'
+
+jmix {
+    bomVersion = project.findProperty('jmixVersion')
+}
+
+repositories {
+    mavenCentral()
+    // For collecting Gradle plugin markers the END project applies via the plugins {} DSL (e.g. idea-ext), so
+    // they end up in the offline repo; it also proxies Maven Central. (The Jmix public/premium and any extra
+    // repositories are version-agnostic and added by resolve-support.gradle.)
+    gradlePluginPortal()
+}
+
+apply from: 'resolve-support.gradle'

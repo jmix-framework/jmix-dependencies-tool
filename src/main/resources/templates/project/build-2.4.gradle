@@ -1,0 +1,60 @@
+// =====================================================================================
+// Deptool resolution project (generated at runtime) - checkpoint 2.4.
+//
+// Changes:
+//   * Excluded com.vaadin:hilla and com.vaadin:hilla-dev
+//   * Added idea-ext plugin
+//
+// Project SHAPE only; the shared resolution mechanism (dependencies, iso configs, resolveAll) lives in
+// resolve-support.gradle (applied at the end).
+// =====================================================================================
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        if (project.hasProperty('jmixPluginVersion')) {
+            classpath "io.jmix.gradle:jmix-gradle-plugin:${project.findProperty('jmixPluginVersion')}"
+        }
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'io.jmix'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.vaadin'
+
+jmix {
+    bomVersion = project.findProperty('jmixVersion')
+}
+
+vaadin {
+    optimizeBundle = false
+}
+
+repositories {
+    mavenCentral()
+    // jmix-saml pulls org.opensaml artifacts that live only in the Shibboleth repo.
+    maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases' }
+    // For collecting Gradle plugin markers the END project applies via the plugins {} DSL (e.g. idea-ext), so
+    // they end up in the offline repo; it also proxies Maven Central. (The Jmix public/premium and any extra
+    // repositories are version-agnostic and added by resolve-support.gradle.)
+    gradlePluginPortal()
+}
+
+configurations.all {
+    exclude group: 'com.vaadin', module: 'hilla'
+    exclude group: 'com.vaadin', module: 'hilla-dev'
+}
+
+// The end project applies the idea-ext Gradle plugin via the plugins {} DSL, which needs its plugin MARKER
+// (and, transitively, the implementation) in the offline repo. Resolving the marker collects both —
+// resolveAll (in resolve-support.gradle) resolves every resolvable configuration. The marker coordinate is
+// always <pluginId>:<pluginId>.gradle.plugin:<version>. Add more lines for other plugins the end project
+// applies via plugins {} without a pluginManagement mapping.
+configurations.create('gradlePlugins')
+dependencies {
+    add('gradlePlugins', 'org.jetbrains.gradle.plugin.idea-ext:org.jetbrains.gradle.plugin.idea-ext.gradle.plugin:1.1.9')
+}
+
+apply from: 'resolve-support.gradle'
