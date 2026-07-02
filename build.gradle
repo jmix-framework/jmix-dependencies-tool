@@ -1,36 +1,55 @@
-def deptoolDir = "deptool-${project.property('version')}"
-
-tasks.register('prepareDist', Copy) {
-    dependsOn tasks.cleanBuild, tasks.copyDeptool, tasks.copyResolver, tasks.copyNpmResolver
+plugins {
+    id 'java'
+    id 'application'
 }
 
-tasks.register('zipDist', Zip) {
-    dependsOn tasks.prepareDist
-    archiveFileName = "${deptoolDir}.zip"
-    destinationDirectory = layout.buildDirectory.dir('distributions')
-    from project.layout.buildDirectory.dir('install')
+group = 'io.jmix.deptool'
+version = project.findProperty('version') ?: '3.0.999-SNAPSHOT'
+
+// Compile with the JVM that runs Gradle (must be Java 17+). We intentionally do NOT use a Java
+// toolchain: toolchain resolution fails in IDEs whose Gradle JVM isn't auto-detected as a match and
+// where toolchain auto-download repositories aren't configured. sourceCompatibility just sets the
+// compiler's -source/-target, matching how v1/v2 compiled.
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
-tasks.register('copyDeptool', Copy) {
-    dependsOn gradle.includedBuild('deptool').task(':installDist')
-    from project.layout.projectDirectory.dir('deptool/build/install/deptool')
-    into project.layout.buildDirectory.dir("install/${deptoolDir}")
+repositories {
+    mavenCentral()
 }
 
-tasks.register('copyResolver', Copy) {
-    from (project.layout.projectDirectory.dir('resolver')) {
-        exclude '**/build', '**/.gradle'
+dependencies {
+    implementation 'com.beust:jcommander:1.82'
+    implementation 'commons-io:commons-io:2.15.0'
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
+    implementation 'org.slf4j:slf4j-api:2.0.5'
+    implementation 'ch.qos.logback:logback-core:1.4.12'
+    implementation 'ch.qos.logback:logback-classic:1.4.12'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2'
+    implementation('org.dom4j:dom4j:2.1.4') {
+        exclude group: "pull-parser", module: "pull-parser"
     }
-    into project.layout.buildDirectory.dir("install/${deptoolDir}/resolver")
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
-tasks.register('copyNpmResolver', Copy) {
-    from (project.layout.projectDirectory.dir('npm-resolver')) {
-        exclude '**/build', '**/.gradle'
-    }
-    into project.layout.buildDirectory.dir("install/${deptoolDir}/npm-resolver")
+test {
+    useJUnitPlatform()
 }
 
-tasks.register('cleanBuild', Delete) {
-    delete project.buildDir
+application {
+    applicationName = 'deptool'
+    mainClass = 'io.jmix.dependency.cli.CliRunner'
+}
+
+// The application plugin already produces `installDist` and `distZip`
+// (build/distributions/deptool-<version>.zip with bin/ + lib/).
+// Unlike v1/v2 there are no separate resolver / npm-resolver projects to bundle:
+// the Gradle projects used for resolution are generated at runtime from templates
+// packaged as resources inside the jar.
+tasks.register('zipDist') {
+    dependsOn 'distZip'
 }

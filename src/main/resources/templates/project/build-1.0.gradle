@@ -1,0 +1,32 @@
+// =====================================================================================
+// deptool resolution project (generated at runtime) - checkpoint 1.0.
+// Jmix 1.x is classic-UI / no Vaadin frontend: the Vaadin plugin is NOT applied and resolve-npm is not
+// supported for this line. Used for Java resolution (resolve-jmix / resolve-lib) only.
+//
+// Project SHAPE only; the shared resolution mechanism (dependencies, iso configs, resolveAll) lives in
+// resolve-support.gradle (applied at the end).
+// =====================================================================================
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        if (project.hasProperty('jmixPluginVersion')) {
+            classpath "io.jmix.gradle:jmix-gradle-plugin:${project.findProperty('jmixPluginVersion')}"
+        }
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'io.jmix'
+apply plugin: 'org.springframework.boot'
+jmix {
+    bomVersion = project.findProperty('jmixVersion')
+}
+
+repositories {
+    mavenCentral()
+    // The Jmix public/premium and any extra repositories are version-agnostic and added by resolve-support.gradle.
+}
+
+apply from: 'resolve-support.gradle'

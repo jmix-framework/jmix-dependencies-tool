@@ -1,0 +1,21 @@
+// =====================================================================================
+// deptool PLAIN-library resolution project (generated at runtime).
+//
+// Used by `resolve-lib <dep>` WITHOUT --jmix-version: no Jmix plugin, no BOM, no Spring Boot, no Vaadin —
+// just resolve the given dependency and its transitive closure (+ sources). Selected automatically when no
+// version is provided (WorkspaceManager.candidateKeys(null) == ["plain"]).
+//
+// For a library that itself depends on Jmix modules, run resolve-lib WITH --jmix-version: that selects a
+// Jmix template (build-<checkpoint>.gradle) so the Jmix BOM governs the transitive versions.
+//
+// Project SHAPE only; the shared resolution mechanism (dependencies, iso configs, resolveAll) lives in
+// resolve-support.gradle (applied at the end).
+// =====================================================================================
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+    // The Jmix public/premium and any extra repositories are version-agnostic and added by resolve-support.gradle.
+}
+
+apply from: 'resolve-support.gradle'

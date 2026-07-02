@@ -1,0 +1,221 @@
+// =====================================================================================
+// Shared deptool resolution mechanism — applied by every build-<checkpoint>.gradle via `apply from`.
+//
+// This is the version-AGNOSTIC part and the single place to maintain it: the common repositories (Jmix
+// public/premium + caller-supplied extras), module dependencies, the isolated per-module configurations, and
+// the resolveAll task. The version-SPECIFIC project SHAPE (which plugins, the jmix/vaadin blocks, the
+// version-specific repositories — mavenCentral / gradlePluginPortal and any era repo such as Shibboleth for
+// jmix-saml — plus any excludes/extra plugin markers) stays in build-<checkpoint>.gradle.
+//
+// Inputs arrive as -P properties (the contract with WorkspaceManager / the CLI commands):
+//   jmixModules            comma-separated GAV list to resolve
+//   jmixVersion / jmixBom  used to build the Jmix BOM notation (absent for a plain-library resolution)
+//   jmixPublicRepository   Jmix public repo URL (default https://global.repo.jmix.io/repository/public)
+//   jmixPremiumRepository  Jmix premium repo URL (default https://global.repo.jmix.io/repository/premium)
+//   jmixLicenseKey         'sub-key'; when present, adds the premium repo with derived credentials
+//   extraRepositories      comma-separated 'url' or 'url|user|pass' entries for additional repositories
+//   isolatedResolution     when present, also resolve each module in isolation (+ explicit-version libs w/o BOM)
+//   skipSources            when present, do not download -sources jars
+// =====================================================================================
+import org.gradle.jvm.JvmLibrary
+import org.gradle.language.base.artifact.SourcesArtifact
+
+def moduleList = (project.findProperty('jmixModules') ?: '').toString().split(',').findAll { it?.trim() }*.trim()
+def bomNotation = project.findProperty('jmixBom') ?:
+        (project.hasProperty('jmixVersion') ? "io.jmix.bom:jmix-bom:${project.findProperty('jmixVersion')}" : null)
+
+// Common repositories, identical for every Jmix line, so they live here instead of being duplicated in every
+// template: the Jmix public repo, the Jmix premium repo (only when a license key is supplied), and any
+// caller-supplied extra repositories. Version-SPECIFIC repos (mavenCentral, gradlePluginPortal, and era repos
+// such as Shibboleth) stay in build-<checkpoint>.gradle. Added here via `apply from`, so they come AFTER the
+// template's own repositories in search order — fine, since Jmix artifacts are served only by these.
+repositories {
+    maven { url project.findProperty('jmixPublicRepository') ?: 'https://global.repo.jmix.io/repository/public' }
+    if (project.hasProperty('jmixLicenseKey')) {
+        String licenseKey = project.property('jmixLicenseKey')
+        maven {
+            url project.findProperty('jmixPremiumRepository') ?: 'https://global.repo.jmix.io/repository/premium'
+            credentials {
+                username licenseKey.substring(0, licenseKey.indexOf('-'))
+                password licenseKey.substring(licenseKey.indexOf('-') + 1)
+            }
+        }
+    }
+    (project.findProperty('extraRepositories') ?: '').toString().split(',').findAll { it?.trim() }.each { repoData ->
+        def parts = repoData.split('\\|')
+        maven {
+            url parts[0].trim()
+            if (parts.length >= 3) { credentials { username parts[1].trim(); password parts[2].trim() } }
+            if (parts[0].trim().startsWith('http://')) { allowInsecureProtocol = true }
+        }
+    }
+}
+
+// All modules on the classpath: the Vaadin plugin scans these for npm packages (resolve-npm), and this is
+// also the "all modules together" graph for Java resolution (compileClasspath / runtimeClasspath).
+dependencies {
+    moduleList.each { implementation it }
+}
+
+// Java-resolution-only extra coverage (enabled by resolve-jmix/resolve-lib via -PisolatedResolution): each
+// module in isolation (its own transitive closure) plus explicit-version libs without the BOM.
+if (project.hasProperty('isolatedResolution')) {
+    def width = Math.max(3, String.valueOf(moduleList.size()).length())
+    def isoName = { int i -> 'iso_' + String.format("%0${width}d", i) }
+    configurations.create('noBom')
+    moduleList.eachWithIndex { dep, i -> configurations.create(isoName(i)) }
+    dependencies {
+        moduleList.eachWithIndex { dep, i ->
+            if (bomNotation) { add(isoName(i), platform(bomNotation)) }
+            add(isoName(i), dep)
+            if (dep.count(':') == 2) { add('noBom', dep) } // group:artifact:version -> also without the BOM
+        }
+    }
+}
+
+def skipSources = project.hasProperty('skipSources')
+
+// Force-downloads the JAR (and -sources unless skipSources) of one exact GAV via a detached, conflict-free
+// configuration. Transitive, so the version's own declared deps (themselves possibly missing) come along.
+// Returns true if a main jar was materialized; pom-only coordinates (BOMs/parent poms) have no jar -> false.
+def forceDownload = { String gav, Set sourcesSeen ->
+    try {
+        def dc = configurations.detachedConfiguration(dependencies.create(gav))
+        dc.transitive = true
+        dc.resolve() // materializes the jar file(s) — getResolvedArtifacts alone does NOT download files
+        if (!skipSources) {
+            dc.resolvedConfiguration.resolvedArtifacts.each { ra ->
+                if (sourcesSeen.add(ra.id.componentIdentifier.toString())) {
+                    dependencies.createArtifactResolutionQuery()
+                            .forComponents(ra.id.componentIdentifier)
+                            .withArtifacts(JvmLibrary, SourcesArtifact)
+                            .execute()
+                }
+            }
+        }
+        return true
+    } catch (Exception e) {
+        logger.info("recover: no jar for '${gav}' (likely pom-only/BOM): ${e.message}")
+        return false
+    }
+}
+
+// Scans the Gradle module cache for every module version that has metadata (.pom/.module) but NO main jar.
+// This is the exact symptom that breaks offline builds: conflict resolution downloads only the WINNING version's
+// jar per configuration, leaving every other version Gradle touched as pom-only — both conflict LOSERS and
+// "ghosts" (a version pulled in under a parent that was evicted before its subtree fully resolved, so it never
+// appears in the final resolution graph). A real project with a different module subset can legitimately select
+// one of those, so its jar must be mirrored. Walking the cache catches all of them regardless of how the pom got
+// there — unlike a resolution-graph walk, which sees losers but not ghosts. (`recovered` are excluded so a
+// genuinely jar-less module — a BOM/parent pom — is attempted once and then skipped, guaranteeing termination.)
+def findPomOnlyWithoutJar = { File modulesRoot, Set recovered ->
+    def result = [] as Set
+    if (!modulesRoot.isDirectory()) {
+        return result
+    }
+    modulesRoot.eachDir { groupDir ->
+        def group = groupDir.name
+        groupDir.eachDir { moduleDir ->
+            def module = moduleDir.name
+            moduleDir.eachDir { versionDir ->
+                def version = versionDir.name
+                def gav = "${group}:${module}:${version}".toString()
+                if (recovered.contains(gav)) {
+                    return
+                }
+                def pomFile = null
+                def hasGradleModule = false
+                def hasMainJar = false
+                versionDir.eachFileRecurse { f ->
+                    if (!f.isFile()) return
+                    def n = f.name
+                    if (n == "${module}-${version}.pom") pomFile = f
+                    else if (n == "${module}-${version}.module") hasGradleModule = true
+                    else if (n == "${module}-${version}.jar") hasMainJar = true
+                }
+                if (hasMainJar) {
+                    return
+                }
+                if (pomFile != null) {
+                    // packaging=pom (BOM / parent pom) has no jar by design — leave it as metadata-only.
+                    if (pomFile.getText('UTF-8') =~ /<packaging>\s*pom\s*<\/packaging>/) {
+                        return
+                    }
+                    result.add(gav)
+                } else if (hasGradleModule) {
+                    result.add(gav) // GMM without a jar — could be a platform; attempt anyway, failure tolerated
+                }
+            }
+        }
+    }
+    return result
+}
+
+// Resolves every resolvable configuration (main jars + pom/.module metadata) and, unless -PskipSources is set,
+// fetches -sources jars. Source queries are deduped across the heavily-overlapping iso_* configs (each unique
+// component is queried once). A final recovery phase (see findPomOnlyWithoutJar/forceDownload) downloads the jar
+// of every version left pom-only by conflict resolution, so any real-project subset finds its jars offline.
+tasks.register('resolveAll') {
+    doLast {
+        def resolvable = configurations.findAll { it.canBeResolved }
+        def total = resolvable.size()
+        def sourcesSeen = [] as Set
+        logger.lifecycle("resolveAll: ${total} configuration(s) to resolve")
+        resolvable.eachWithIndex { cfg, idx ->
+            def pos = "${idx + 1}/${total}"
+            logger.lifecycle("[${pos}] resolving configuration '${cfg.name}'...")
+            try {
+                cfg.resolve() // force download of main artifacts (jars) + pom/.module metadata
+                def artifacts = cfg.resolvedConfiguration.resolvedArtifacts
+                if (skipSources) {
+                    logger.lifecycle("[${pos}] '${cfg.name}': ${artifacts.size()} artifact(s) resolved (sources skipped)")
+                } else {
+                    logger.lifecycle("[${pos}] '${cfg.name}': ${artifacts.size()} artifact(s) resolved; fetching sources...")
+                    def newCount = 0
+                    def reused = 0
+                    artifacts.each { ra ->
+                        if (sourcesSeen.add(ra.id.componentIdentifier.toString())) {
+                            dependencies.createArtifactResolutionQuery()
+                                    .forComponents(ra.id.componentIdentifier)
+                                    .withArtifacts(JvmLibrary, SourcesArtifact)
+                                    .execute()
+                            if (++newCount % 50 == 0) {
+                                logger.lifecycle("[${pos}] '${cfg.name}': sources ${newCount} new...")
+                            }
+                        } else {
+                            reused++
+                        }
+                    }
+                    logger.lifecycle("[${pos}] '${cfg.name}': sources ${newCount} new, ${reused} already fetched")
+                }
+            } catch (Exception e) {
+                logger.warn("Could not fully resolve configuration '${cfg.name}': ${e.message}")
+            }
+        }
+
+        // Recovery phase: conflict resolution downloads only the WINNING version's jar per configuration. Every
+        // other version Gradle touched (a conflict loser, or a ghost pulled in under a later-evicted parent) is
+        // left in the cache as pom-only. Scan the cache for those and force-download each jar, looped to a
+        // fixpoint because a recovered version's transitive closure may itself add new pom-only versions.
+        def modulesRoot = new File(gradle.gradleUserHomeDir, 'caches/modules-2/files-2.1')
+        def recovered = [] as Set
+        def failed = 0
+        def round = 0
+        while (true) {
+            def pomOnly = findPomOnlyWithoutJar(modulesRoot, recovered)
+            if (pomOnly.isEmpty()) {
+                break
+            }
+            round++
+            logger.lifecycle("resolveAll: recovery round ${round} — ${pomOnly.size()} pom-only version(s) missing a jar")
+            pomOnly.each { gav ->
+                recovered.add(gav) // mark before attempting so a jar-less BOM is tried once, not every round
+                if (!forceDownload(gav, sourcesSeen)) {
+                    failed++
+                }
+            }
+        }
+        logger.lifecycle("resolveAll: recovered ${recovered.size() - failed} missing jar(s) over ${round} round(s) " +
+                "(${failed} pom-only/no-jar skipped)")
+    }
+}
