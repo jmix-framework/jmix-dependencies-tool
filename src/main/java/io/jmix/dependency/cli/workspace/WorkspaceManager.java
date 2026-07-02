@@ -55,16 +55,33 @@ public class WorkspaceManager {
     /** Final fallback Gradle version when no checkpoint and no {@code default} key matches. */
     public static final String DEFAULT_GRADLE_VERSION = "8.14.4";
 
-    private static final String TEMPLATE_DIR = "templates/project";
+    /** Default classpath base under which the bundled templates live. */
+    private static final String DEFAULT_TEMPLATES_ROOT = "templates";
     private static final String DISTRIBUTION_URL_TEMPLATE =
             "https\\://services.gradle.org/distributions/gradle-%s-bin.zip";
 
     private final Path workspaceRoot;
+    private final String templatesRoot;
     private Properties gradleVersions;
     private Set<String> templateCheckpoints;
 
     public WorkspaceManager(Path workspaceRoot) {
+        this(workspaceRoot, DEFAULT_TEMPLATES_ROOT);
+    }
+
+    /**
+     * @param workspaceRoot where the throw-away project is generated
+     * @param templatesRoot classpath base under which the templates live (normally {@code "templates"}).
+     *                      Overridable so tests can point at a fixed fixture set
+     *                      ({@code test-templates}) and stay independent of the shipped templates.
+     */
+    public WorkspaceManager(Path workspaceRoot, String templatesRoot) {
         this.workspaceRoot = workspaceRoot;
+        this.templatesRoot = templatesRoot;
+    }
+
+    private String templateDir() {
+        return templatesRoot + "/project";
     }
 
     /** The effective Gradle version: an explicit override wins, otherwise the per-checkpoint recommendation. */
@@ -105,14 +122,14 @@ public class WorkspaceManager {
             }
             Files.createDirectories(dir);
 
-            writeResource("templates/settings.gradle", dir.resolve("settings.gradle"));
+            writeResource(templatesRoot + "/settings.gradle", dir.resolve("settings.gradle"));
             Files.writeString(dir.resolve("build.gradle"), readBuildTemplate(version), StandardCharsets.UTF_8);
             // Shared resolution mechanism applied by every build-<checkpoint>.gradle via `apply from`.
-            writeResource(TEMPLATE_DIR + "/resolve-support.gradle", dir.resolve("resolve-support.gradle"));
+            writeResource(templateDir() + "/resolve-support.gradle", dir.resolve("resolve-support.gradle"));
 
             Path frontend = dir.resolve("frontend");
             Files.createDirectories(frontend);
-            writeResource(TEMPLATE_DIR + "/frontend-index.html", frontend.resolve("index.html"));
+            writeResource(templateDir() + "/frontend-index.html", frontend.resolve("index.html"));
 
             writeWrapper(dir, gradleVersion);
 
@@ -126,11 +143,11 @@ public class WorkspaceManager {
     private void writeWrapper(Path dir, String gradleVersion) throws IOException {
         Path wrapperDir = dir.resolve("gradle/wrapper");
         Files.createDirectories(wrapperDir);
-        writeResource("templates/wrapper/gradle-wrapper.jar", wrapperDir.resolve("gradle-wrapper.jar"));
+        writeResource(templatesRoot + "/wrapper/gradle-wrapper.jar", wrapperDir.resolve("gradle-wrapper.jar"));
 
         Path gradlew = dir.resolve("gradlew");
-        writeResource("templates/wrapper/gradlew", gradlew);
-        writeResource("templates/wrapper/gradlew.bat", dir.resolve("gradlew.bat"));
+        writeResource(templatesRoot + "/wrapper/gradlew", gradlew);
+        writeResource(templatesRoot + "/wrapper/gradlew.bat", dir.resolve("gradlew.bat"));
         // Restore the executable bit lost when shipping the script as a resource (no-op on Windows).
         gradlew.toFile().setExecutable(true, false);
 
@@ -163,7 +180,7 @@ public class WorkspaceManager {
 
     private String readBuildTemplate(JmixVersion version) throws IOException {
         String key = selectTemplateKey(version);
-        String resource = TEMPLATE_DIR + "/build-" + key + ".gradle";
+        String resource = templateDir() + "/build-" + key + ".gradle";
         try (InputStream is = classpath(resource)) {
             if (is == null) {
                 throw new IllegalStateException("Missing bundled template: " + resource);
@@ -183,8 +200,9 @@ public class WorkspaceManager {
 
     private Set<String> enumerateTemplateCheckpoints() {
         Set<String> versions = new TreeSet<>();
+        String templateDir = templateDir();
         try {
-            URL url = getClass().getClassLoader().getResource(TEMPLATE_DIR);
+            URL url = getClass().getClassLoader().getResource(templateDir);
             if (url == null) {
                 return versions;
             }
@@ -199,7 +217,7 @@ public class WorkspaceManager {
                     Enumeration<JarEntry> en = jar.entries();
                     while (en.hasMoreElements()) {
                         String name = en.nextElement().getName();
-                        if (name.startsWith(TEMPLATE_DIR + "/") && name.endsWith(".gradle")) {
+                        if (name.startsWith(templateDir + "/") && name.endsWith(".gradle")) {
                             addTemplateCheckpoint(name.substring(name.lastIndexOf('/') + 1), versions);
                         }
                     }
@@ -224,7 +242,7 @@ public class WorkspaceManager {
     private Properties loadGradleVersions() {
         if (gradleVersions == null) {
             gradleVersions = new Properties();
-            try (InputStream is = classpath("templates/gradle-versions.properties")) {
+            try (InputStream is = classpath(templatesRoot + "/gradle-versions.properties")) {
                 if (is != null) {
                     gradleVersions.load(is);
                 }

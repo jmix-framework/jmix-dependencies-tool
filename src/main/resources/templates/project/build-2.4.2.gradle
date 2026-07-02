@@ -33,8 +33,6 @@ vaadin {
 
 repositories {
     mavenCentral()
-    // jmix-saml pulls org.opensaml artifacts that live only in the Shibboleth repo.
-    maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases' }
     // For collecting Gradle plugin markers the END project applies via the plugins {} DSL (e.g. idea-ext), so
     // they end up in the offline repo; it also proxies Maven Central. (The Jmix public/premium and any extra
     // repositories are version-agnostic and added by resolve-support.gradle.)
