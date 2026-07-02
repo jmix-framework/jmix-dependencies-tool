@@ -310,7 +310,6 @@ library coordinate, let Gradle download everything, copy it out, upload it — b
 | Dependency input | Two mechanisms (`--dependency` task option for Java, `-PexternalDependencies` for npm) | One mechanism: `-PjmixModules` project property for both |
 | `export-npm` | `npm install node-tgz-downloader` + `npx download-tgz` (re-resolves peerDependencies → wrong versions) | **Pure Java**: parse the lockfile, collect resolved **+ exact-pin variant** versions, download tarballs from the registry. No Node.js. |
 | Additional npm deps | Hand-maintained `additional/npm/<version>/package-lock.json` to recover missed versions | **Removed** — the dev-bundle lock + variant collection cover them automatically |
-| Missing Java jars | Hand-maintained `additional` dependency lists | **Removed** — the pom-only jar recovery pass covers them automatically |
 | Gradle execution | Embedded Gradle Tooling API (one static client version) | **Generated Gradle wrapper run as a subprocess** (`--no-daemon`) — the daemon Gradle is fully decoupled from the tool |
 | Gradle version | Tooling API default / `--gradle-version` | **Per-checkpoint** (`gradle-versions.properties`): 1.0→7.6.4, 2.0→8.14.4, 3.0→9.5.1; `--gradle-version` overrides |
 | Distribution | deptool + resolver + npm-resolver | Just deptool (templates + Gradle wrapper embedded in the jar) |
