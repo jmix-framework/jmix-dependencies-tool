@@ -223,6 +223,9 @@ pluginManagement {
             if (requested.id.id == 'io.jmix') {
                 useModule("io.jmix.gradle:jmix-gradle-plugin:${requested.version}")
             }
+            if (requested.id.id == 'org.jetbrains.gradle.plugin.idea-ext') {
+                useModule("gradle.plugin.org.jetbrains.gradle.plugin.idea-ext:gradle-idea-ext:${requested.version}")
+            }
         }
     }
 
