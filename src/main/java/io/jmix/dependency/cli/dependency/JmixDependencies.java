@@ -38,7 +38,7 @@ public class JmixDependencies {
         // A dependencies descriptor for the target version MUST be present. There is deliberately NO fallback:
         // silently resolving against a generic/default descriptor would produce a result that is obviously
         // incorrect for the requested version and hide the real problem (an unsupported version). Fail loudly
-        // instead — see "Supporting a new framework version" in the README.
+        // instead - see "Supporting a new framework version" in the README.
         boolean minorPresent = dependenciesDescriptorExists(minorJmixVersion);
         boolean patchPresent = dependenciesDescriptorExists(jmixVersion);
         if (!minorPresent && !patchPresent) {

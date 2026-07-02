@@ -48,7 +48,7 @@ configurations.all {
 }
 
 // The end project applies the idea-ext Gradle plugin via the plugins {} DSL, which needs its plugin MARKER
-// (and, transitively, the implementation) in the offline repo. Resolving the marker collects both —
+// (and, transitively, the implementation) in the offline repo. Resolving the marker collects both -
 // resolveAll (in resolve-support.gradle) resolves every resolvable configuration. The marker coordinate is
 // always <pluginId>:<pluginId>.gradle.plugin:<version>. Add more lines for other plugins the end project
 // applies via plugins {} without a pluginManagement mapping.

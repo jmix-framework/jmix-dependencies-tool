@@ -22,7 +22,7 @@ import java.util.List;
  * Exports npm dependencies as a directory of tgz archives ready for {@code upload-npm}.
  * <p>
  * Pure Java: it reads the resolved {@code package-lock.json}(s), collects the versions to mirror
- * (resolved + exact-pin variants), and downloads each tarball directly — no Node.js, no
+ * (resolved + exact-pin variants), and downloads each tarball directly - no Node.js, no
  * {@code node-tgz-downloader}, no re-resolution of peerDependencies.
  * <p>
  * By default it unions the two lockfiles {@code resolve-npm} produces in {@code ../npm-work}: the project

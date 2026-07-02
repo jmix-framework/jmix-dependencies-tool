@@ -55,7 +55,7 @@ public class NpmExporter implements AutoCloseable {
                     ref = registry.lookup(name, version);
                 }
                 if (ref == null || ref.url() == null) {
-                    log.warn("No tarball URL for {}@{} — skipping", name, version);
+                    log.warn("No tarball URL for {}@{} - skipping", name, version);
                     report.missing.add(NpmDownloadPlan.key(name, version));
                     continue;
                 }

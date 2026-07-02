@@ -10,9 +10,9 @@ import java.util.TreeSet;
  * <p>
  * Versions come from two sources:
  * <ul>
- *   <li><b>resolved</b> — the version npm actually installed (from the lockfile's {@code resolved} field);
+ *   <li><b>resolved</b> - the version npm actually installed (from the lockfile's {@code resolved} field);
  *       its tarball URL and integrity are known up front;</li>
- *   <li><b>variant</b> — a version named as an <em>exact</em> pin somewhere in the graph
+ *   <li><b>variant</b> - a version named as an <em>exact</em> pin somewhere in the graph
  *       (typically a {@code peerDependencies} pin like {@code "dompurify": "3.4.0"}) that differs from the
  *       resolved one; its tarball is looked up from the registry at download time.</li>
  * </ul>

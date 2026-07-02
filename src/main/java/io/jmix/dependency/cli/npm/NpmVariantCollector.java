@@ -15,11 +15,11 @@ import java.util.regex.Pattern;
  * Multiple lockfiles are unioned. {@code resolve-npm} produces two: the project lock from
  * {@code vaadinBuildFrontend} (Jmix-specific packages + a fresh, possibly floating resolution) and the
  * {@code vaadin-dev-bundle} jar's lock (the framework's frozen versions, e.g. {@code dompurify 3.4.5}). The
- * union covers both — the Jmix packages and the stable framework versions a project actually runs on.
+ * union covers both - the Jmix packages and the stable framework versions a project actually runs on.
  */
 public class NpmVariantCollector {
 
-    // A single concrete semver, optionally prefixed with '=' or 'v' — NOT a range (^ ~ > < x * || space -).
+    // A single concrete semver, optionally prefixed with '=' or 'v' - NOT a range (^ ~ > < x * || space -).
     private static final Pattern EXACT = Pattern.compile("\\d+\\.\\d+\\.\\d+([-+][0-9A-Za-z-.]+)?");
 
     public static NpmDownloadPlan collect(PackageLock lock) {
@@ -38,7 +38,7 @@ public class NpmVariantCollector {
                 if (e.resolved != null) {
                     plan.addResolved(e.name, e.version, new ResolvedRef(e.resolved, e.integrity));
                 } else {
-                    // installed but without a tarball URL (e.g. workspace/link) — still record the version
+                    // installed but without a tarball URL (e.g. workspace/link) - still record the version
                     plan.addVariant(e.name, e.version);
                 }
             }

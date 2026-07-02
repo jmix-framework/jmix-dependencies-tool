@@ -18,9 +18,9 @@ import java.util.Properties;
  * <p>
  * v3 deliberately does NOT use the Gradle Tooling API: deptool only ever runs a task (it never fetches
  * Tooling models), and an embedded Tooling API would tie the tool to a single client version that cannot
- * span every framework line's Gradle (1.x→7.x, 2.x→8.x, 3.x→9.5). Driving the wrapper as a separate
+ * span every framework line's Gradle (1.x->7.x, 2.x->8.x, 3.x->9.5). Driving the wrapper as a separate
  * process makes the daemon Gradle version whatever the wrapper's {@code distributionUrl} pins, decoupling
- * it from the tool entirely. The only requirement is that deptool's JVM can launch the daemon — JDK 17
+ * it from the tool entirely. The only requirement is that deptool's JVM can launch the daemon - JDK 17
  * covers Gradle 7.x through 9.x.
  */
 public class JmixGradleClient {
@@ -43,7 +43,7 @@ public class JmixGradleClient {
      * The {@link GradleArgs} project properties are written to {@code <projectDir>/gradle.properties} rather
      * than passed as {@code -P} on the command line; only raw arguments (and {@code --gradle-user-home},
      * {@code --console=plain}, {@code --no-daemon}) go on the command line. This keeps the command length
-     * bounded no matter how many Jmix modules are resolved — the {@code jmixModules} list alone can hold
+     * bounded no matter how many Jmix modules are resolved - the {@code jmixModules} list alone can hold
      * hundreds of coordinates with commercial add-ons, which would otherwise overflow the OS limit.
      */
     public void runTask(String taskName, GradleArgs args) {
@@ -96,7 +96,7 @@ public class JmixGradleClient {
     /**
      * Writes the project properties to {@code <projectDir>/gradle.properties}, which Gradle auto-loads before
      * evaluating the build. Uses {@link Properties#store} so values (URLs with '{@code :}', credentials, etc.)
-     * are escaped and round-trip exactly. Values are not logged — {@code jmixLicenseKey} is among them.
+     * are escaped and round-trip exactly. Values are not logged - {@code jmixLicenseKey} is among them.
      */
     private void writeGradleProperties(Map<String, String> properties) {
         Path file = projectDir.resolve("gradle.properties");

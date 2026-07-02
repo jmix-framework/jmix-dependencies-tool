@@ -120,7 +120,7 @@ public class ResolveNpmCommand implements BaseCommand {
                 .raw("--info");
 
         // Vaadin generates package.json, runs npm install (which populates the seeded package-lock.json),
-        // builds the bundle, then deletes the generated frontend files — but it leaves the pre-existing lock.
+        // builds the bundle, then deletes the generated frontend files - but it leaves the pre-existing lock.
         new JmixGradleClient(projectDir, gradleUserHome).runTask("vaadinBuildFrontend", args);
 
         copyResolvedLock(projectDir);
@@ -130,10 +130,10 @@ public class ResolveNpmCommand implements BaseCommand {
 
     /**
      * Extracts {@code package-lock.json} from the resolved {@code vaadin-dev-bundle} jar (the framework's
-     * FROZEN npm versions — e.g. dompurify 3.4.5) into a sibling of the project lock, so export-npm mirrors
+     * FROZEN npm versions - e.g. dompurify 3.4.5) into a sibling of the project lock, so export-npm mirrors
      * those alongside the freshly resolved set. Best effort: a missing jar only warns (the project lock from
      * vaadinBuildFrontend still drives the export). The jar version follows whatever the Vaadin/Jmix BOM
-     * resolved — found by name, not hard-coded — so it stays correct across framework versions.
+     * resolved - found by name, not hard-coded - so it stays correct across framework versions.
      */
     private void extractDevBundleLock() {
         Path cacheDir = Paths.get(gradleUserHome, "caches", "modules-2", "files-2.1");
@@ -156,7 +156,7 @@ public class ResolveNpmCommand implements BaseCommand {
             return;
         }
         if (jar == null) {
-            log.warn("vaadin-dev-bundle jar not found in the Gradle cache — the framework's frozen npm versions "
+            log.warn("vaadin-dev-bundle jar not found in the Gradle cache - the framework's frozen npm versions "
                     + "will not be collected; only the freshly resolved project lock will be used.");
             return;
         }
@@ -183,7 +183,7 @@ public class ResolveNpmCommand implements BaseCommand {
      * Pre-creates an (empty) package-lock.json at the project root before the frontend build.
      * <p>
      * Vaadin's frontend build generates the lockfile during the task but then deletes its generated frontend
-     * files — UNLESS the file already existed. So we seed a stub: {@code npm install} populates it in place,
+     * files - UNLESS the file already existed. So we seed a stub: {@code npm install} populates it in place,
      * and Vaadin leaves it because it pre-existed. (This is the same trick v1/v2 used with its
      * stub/package-lock.json.) npm rewrites the contents and upgrades the lockfile version on install, so the
      * stub's own version is just a placeholder.
@@ -242,7 +242,7 @@ public class ResolveNpmCommand implements BaseCommand {
         if (best == null) {
             if (!pnpmLocks.isEmpty()) {
                 throw new RuntimeException("The frontend build produced a pnpm lockfile (" + pnpmLocks.get(0)
-                        + ") but no package-lock.json. The npm exporter needs npm's package-lock.json — configure the "
+                        + ") but no package-lock.json. The npm exporter needs npm's package-lock.json - configure the "
                         + "Vaadin build to use npm (set 'pnpmEnable = false' in the vaadin {} block of the "
                         + "build-<checkpoint>.gradle template) and re-run.");
             }
@@ -255,7 +255,7 @@ public class ResolveNpmCommand implements BaseCommand {
         }
 
         if (bestCount <= 0) {
-            throw new RuntimeException("The resolved package-lock.json (" + best + ") has no package entries — "
+            throw new RuntimeException("The resolved package-lock.json (" + best + ") has no package entries - "
                     + "npm install did not populate the seeded stub (the frontend build likely skipped the install). "
                     + "Check the vaadinBuildFrontend output.");
         }

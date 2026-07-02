@@ -1,7 +1,7 @@
 // =====================================================================================
 // deptool PLAIN-library resolution project (generated at runtime).
 //
-// Used by `resolve-lib <dep>` WITHOUT --jmix-version: no Jmix plugin, no BOM, no Spring Boot, no Vaadin —
+// Used by `resolve-lib <dep>` WITHOUT --jmix-version: no Jmix plugin, no BOM, no Spring Boot, no Vaadin -
 // just resolve the given dependency and its transitive closure (+ sources). Selected automatically when no
 // version is provided (WorkspaceManager.candidateKeys(null) == ["plain"]).
 //

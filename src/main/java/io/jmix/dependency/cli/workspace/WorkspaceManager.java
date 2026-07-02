@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * <p>
  * There is a <b>single</b> project template group ({@code templates/project/}), not one per scope: a real
  * Jmix app is one project that carries both its Java and (via the Vaadin plugin) its npm dependencies.
- * The same generated project is used for every resolution command — {@code resolve-jmix}/{@code resolve-lib}
+ * The same generated project is used for every resolution command - {@code resolve-jmix}/{@code resolve-lib}
  * run its {@code resolveAll} task, {@code resolve-npm} runs {@code vaadinBuildFrontend}.
  * <p>
  * <b>Template selection is checkpoint-based.</b> A template named {@code build-<X.Y>.gradle} is a checkpoint

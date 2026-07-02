@@ -18,7 +18,7 @@ import java.util.Map;
  * Minimal, defensive parser for npm's {@code package-lock.json}.
  * <p>
  * Prefers the modern {@code packages} map (lockfileVersion 2 and 3, npm &gt;= 7), which records every
- * installed package — regular deps, auto-installed peers and optionals — each with its exact
+ * installed package - regular deps, auto-installed peers and optionals - each with its exact
  * {@code version}, {@code resolved} tarball URL and {@code integrity}. Falls back to the legacy v1
  * {@code dependencies} tree when {@code packages} is absent (peer pins are not available there).
  */

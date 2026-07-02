@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * These tests run against a <b>stable fixture set</b> of templates under {@code src/test/resources/test-templates}
  * (checkpoints {@code 1.0, 2.0, 2.1, 2.3.1, 3.0} + {@code plain}, and a fixture {@code gradle-versions.properties}
  * with distinctive values {@code 1.1.1 / 2.2.2 / 3.3.3}), <em>not</em> the shipped templates. So adding or
- * changing a production {@code build-<x>.gradle} never breaks these assertions — the test only checks that file
+ * changing a production {@code build-<x>.gradle} never breaks these assertions - the test only checks that file
  * selection by version and the classpath enumeration behind it are correct. The pure selection algorithm is
  * covered separately by {@code CheckpointSelectorTest}.
  */
