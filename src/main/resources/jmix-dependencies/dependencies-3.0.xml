@@ -192,6 +192,36 @@
         <dependency>com.microsoft.sqlserver:mssql-jdbc</dependency>
         <dependency>com.oracle.database.jdbc:ojdbc8</dependency>
 
+        <!-- Optional dependencies declared 'compileOnly' by Jmix modules. compileOnly is not transitive and is
+             absent from the published module POMs, so these cannot be discovered by resolving the modules and
+             must be listed here to be mirrored. A project enables the corresponding feature by adding the
+             dependency explicitly. Versions are managed by the Jmix BOM, so they are declared version-less.
+             Listed ONLY if declared as compileOnly framework-wide: deps that some module also declares as a
+             normal api/implementation dependency (e.g. spring-boot-starter-quartz via jmix-quartz,
+             spring-data-commons via jmix-core, vaadin-spring-boot-starter via jmix-flowui) are already resolved
+             transitively and must not be added here. -->
+
+        <!-- reports -->
+        <dependency>net.sf.jasperreports:jasperreports</dependency>
+        <dependency>net.sf.jasperreports:jasperreports-fonts</dependency>
+        <dependency>net.sf.jasperreports:jasperreports-functions</dependency>
+
+        <!-- clustering (Hazelcast) -->
+        <dependency>com.hazelcast:hazelcast</dependency>
+        <dependency>com.hazelcast.spring:hazelcast-spring-session</dependency>
+
+        <!-- cloud integrations (Oracle EclipseLink, Azure, Google Cloud) -->
+        <dependency>org.eclipse.persistence:org.eclipse.persistence.oracle</dependency>
+        <dependency>com.microsoft.azure:msal4j</dependency>
+        <dependency>com.google.auth:google-auth-library-oauth2-http</dependency>
+
+        <!-- optional Spring Boot starters -->
+        <dependency>org.springframework.boot:spring-boot-starter-websocket</dependency>
+        <dependency>org.springframework.boot:spring-boot-web-server</dependency>
+
+        <!-- misc -->
+        <dependency>jakarta.transaction:jakarta.transaction-api</dependency>
+
     </open-source-dependencies>
 
     <commercial-dependencies>

@@ -458,6 +458,17 @@ template so the BOM governs the transitive versions; omitting it uses `build-pla
 
 1. Add `dependencies-<minor>.xml` (the module list) — **this is usually the only step.** There is no default
    fallback: resolving a version with no descriptor **fails fast** rather than shipping a generic/incorrect set.
+
+   > **Optional `compileOnly` dependencies must be listed explicitly.** Some Jmix modules declare optional
+   > integrations as `compileOnly` (e.g. `net.sf.jasperreports:jasperreports` in `jmix-reports`, Hazelcast,
+   > Oracle EclipseLink). `compileOnly` is not transitive and is absent from the published module POMs, so it
+   > **cannot** be discovered by resolving the modules — you must add these coordinates to
+   > `dependencies-<minor>.xml`, **version-less** (the Jmix BOM manages their versions). Add a coordinate only
+   > if it is declared as `compileOnly` *framework-wide*: if any module also declares it as a normal
+   > `api`/`implementation` dependency (e.g. `spring-boot-starter-quartz` via `jmix-quartz`), it is already
+   > resolved transitively — do not add it. To find the true set, survey the framework source:
+   > `grep -rE "(api|implementation)[ (]+['\"]<group:artifact>" --include=*.gradle` (excluding `bom.gradle`,
+   > whose `api` entries are only BOM version constraints) — an empty result means it belongs in the list.
 2. *(npm)* nothing — the dev-bundle lock + variant collection handle missed versions automatically.
 3. **Only if the project shape changed at this version** (a plugin added/removed, a settings block dropped, a
    new repository required): add a checkpoint template `build-<X.Y>.gradle`. It applies from X.Y forward until
