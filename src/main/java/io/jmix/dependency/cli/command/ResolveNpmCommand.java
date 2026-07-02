@@ -113,12 +113,11 @@ public class ResolveNpmCommand implements BaseCommand {
         Path projectDir = workspaceManager.prepare(parsedVersion, effectiveGradleVersion);
         seedPackageLockStub(projectDir);
 
-        List<String> args = GradleArgs.create()
+        GradleArgs args = GradleArgs.create()
                 .jmix(jmixVersion, jmixPluginVersion, jmixLicenseKey, publicRepository, premiumRepository, repositories)
                 .modules(modules)
                 .raw("--stacktrace")
-                .raw("--info")
-                .build();
+                .raw("--info");
 
         // Vaadin generates package.json, runs npm install (which populates the seeded package-lock.json),
         // builds the bundle, then deletes the generated frontend files — but it leaves the pre-existing lock.

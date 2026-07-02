@@ -81,14 +81,14 @@ public class ResolveLibCommand implements BaseCommand {
         GradleArgs gradleArgs = GradleArgs.create()
                 .jmix(jmixVersion, jmixPluginVersion, jmixLicenseKey, publicRepository, premiumRepository, repositories)
                 .modules(List.of(dependency))
-                .raw("-PisolatedResolution")
+                .flag("isolatedResolution")
                 .raw("--stacktrace")
                 .raw("--info");
         if (noSources) {
-            gradleArgs.raw("-PskipSources");
+            gradleArgs.flag("skipSources");
         }
 
-        new JmixGradleClient(projectDir, gradleUserHome).runTask("resolveAll", gradleArgs.build());
+        new JmixGradleClient(projectDir, gradleUserHome).runTask("resolveAll", gradleArgs);
         log.info("Resolving a dependency completed successfully");
     }
 }
