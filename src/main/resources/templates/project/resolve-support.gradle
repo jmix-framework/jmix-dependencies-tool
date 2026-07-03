@@ -19,6 +19,9 @@
 // =====================================================================================
 import org.gradle.jvm.JvmLibrary
 import org.gradle.language.base.artifact.SourcesArtifact
+import org.gradle.api.artifacts.component.ModuleComponentSelector
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 
 def moduleList = (project.findProperty('jmixModules') ?: '').toString().split(',').findAll { it?.trim() }*.trim()
 def bomNotation = project.findProperty('jmixBom') ?:
@@ -59,25 +62,82 @@ dependencies {
 
 // Java-resolution-only extra coverage (enabled by resolve-jmix/resolve-lib via -PisolatedResolution): each
 // module in isolation (its own transitive closure) plus explicit-version libs without the BOM.
+//
+// CRITICAL: each isolated config copies the resolution ATTRIBUTES of a real classpath. A raw configuration
+// (no attributes) resolves a default/runtime variant and silently MISSES compile-only transitive dependencies
+// - e.g. Guava's compile-only com.google.j2objc:j2objc-annotations, whose version is pinned by guava-parent's
+// module metadata. So a module isolated to an older Guava would not collect that Guava's j2objc version at all.
+// We resolve each module BOTH ways - as a compile classpath (java-api: captures compile-only/api deps) and as a
+// runtime classpath (captures implementation/runtimeOnly deps) - because neither variant is a superset.
 if (project.hasProperty('isolatedResolution')) {
+    def compileCp = configurations.findByName('compileClasspath')
+    def runtimeCp = configurations.findByName('runtimeClasspath')
+    def mkResolvable = { String name, attrSource ->
+        def cfg = configurations.create(name)
+        cfg.canBeConsumed = false
+        if (attrSource != null) {
+            attrSource.attributes.keySet().each { attr ->
+                cfg.attributes.attribute(attr, attrSource.attributes.getAttribute(attr))
+            }
+        }
+    }
     def width = Math.max(3, String.valueOf(moduleList.size()).length())
-    def isoName = { int i -> 'iso_' + String.format("%0${width}d", i) }
-    configurations.create('noBom')
-    moduleList.eachWithIndex { dep, i -> configurations.create(isoName(i)) }
+    def isoName = { int i, String kind -> 'iso_' + String.format("%0${width}d", i) + '_' + kind }
+
+    mkResolvable('noBom_api', compileCp)
+    mkResolvable('noBom_rt', runtimeCp)
+    moduleList.eachWithIndex { dep, i ->
+        mkResolvable(isoName(i, 'api'), compileCp)
+        mkResolvable(isoName(i, 'rt'), runtimeCp)
+    }
     dependencies {
         moduleList.eachWithIndex { dep, i ->
-            if (bomNotation) { add(isoName(i), platform(bomNotation)) }
-            add(isoName(i), dep)
-            if (dep.count(':') == 2) { add('noBom', dep) } // group:artifact:version -> also without the BOM
+            if (bomNotation) {
+                add(isoName(i, 'api'), platform(bomNotation))
+                add(isoName(i, 'rt'), platform(bomNotation))
+            }
+            add(isoName(i, 'api'), dep)
+            add(isoName(i, 'rt'), dep)
+            if (dep.count(':') == 2) { // group:artifact:version -> also resolve without the BOM, both variants
+                add('noBom_api', dep)
+                add('noBom_rt', dep)
+            }
         }
     }
 }
 
 def skipSources = project.hasProperty('skipSources')
 
-// Force-downloads the JAR (and -sources unless skipSources) of one exact GAV via a detached, conflict-free
-// configuration. Transitive, so the version's own declared deps (themselves possibly missing) come along.
-// Returns true if a main jar was materialized; pom-only coordinates (BOMs/parent poms) have no jar -> false.
+// A version string that names exactly one concrete version (not a range / dynamic selector). Only such
+// versions are force-downloaded; ranges already resolve to a concrete winner in the normal resolve.
+def isConcreteVersion = { String v ->
+    v && !v.contains(' ') && !(v ==~ /.*[\[\]\(\),].*/) && !v.endsWith('+') &&
+            !v.equalsIgnoreCase('latest.release') && !v.equalsIgnoreCase('latest.integration')
+}
+
+// Adds to `sink` every module version REQUESTED on some edge but NOT selected (a conflict loser). Force-
+// downloading these TRANSITIVELY (below) re-expands subtrees that conflict resolution evicted - the crucial
+// case being a version dropped BEFORE its subtree was explored, so the versions IT declares (e.g. an older
+// Guava's j2objc-annotations) were never fetched at all and thus cannot be found by scanning the cache.
+def collectRejected = { resolutionResult, Set sink ->
+    resolutionResult.allDependencies.each { dep ->
+        if (dep instanceof ResolvedDependencyResult) {
+            def req = dep.requested
+            if (req instanceof ModuleComponentSelector && isConcreteVersion(req.version)) {
+                def selId = dep.selected.id
+                def selVer = (selId instanceof ModuleComponentIdentifier) ? selId.version : null
+                if (req.version != selVer) {
+                    sink.add("${req.group}:${req.module}:${req.version}".toString())
+                }
+            }
+        }
+    }
+}
+
+// Force-downloads the JAR(s) of one exact GAV via a detached, conflict-free, TRANSITIVE configuration, so the
+// version's own declared closure (itself possibly never fetched) comes along. Also fetches -sources unless
+// skipSources. Returns the detached resolution result (to mine for deeper rejects), or null when nothing could
+// be resolved (a pom-only BOM / parent pom has no jar).
 def forceDownload = { String gav, Set sourcesSeen ->
     try {
         def dc = configurations.detachedConfiguration(dependencies.create(gav))
@@ -93,10 +153,10 @@ def forceDownload = { String gav, Set sourcesSeen ->
                 }
             }
         }
-        return true
+        return dc.incoming.resolutionResult
     } catch (Exception e) {
-        logger.info("recover: no jar for '${gav}' (likely pom-only/BOM): ${e.message}")
-        return false
+        logger.info("recover: could not fully download '${gav}' (may be pom-only/BOM): ${e.message}")
+        return null
     }
 }
 
@@ -160,6 +220,7 @@ tasks.register('resolveAll') {
         def resolvable = configurations.findAll { it.canBeResolved }
         def total = resolvable.size()
         def sourcesSeen = [] as Set
+        def rejectedVersions = new LinkedHashSet() // conflict losers seen across all configs (requested != selected)
         logger.lifecycle("resolveAll: ${total} configuration(s) to resolve")
         resolvable.eachWithIndex { cfg, idx ->
             def pos = "${idx + 1}/${total}"
@@ -188,34 +249,59 @@ tasks.register('resolveAll') {
                     }
                     logger.lifecycle("[${pos}] '${cfg.name}': sources ${newCount} new, ${reused} already fetched")
                 }
+                collectRejected(cfg.incoming.resolutionResult, rejectedVersions)
             } catch (Exception e) {
                 logger.warn("Could not fully resolve configuration '${cfg.name}': ${e.message}")
             }
         }
 
-        // Recovery phase: conflict resolution downloads only the WINNING version's jar per configuration. Every
-        // other version Gradle touched (a conflict loser, or a ghost pulled in under a later-evicted parent) is
-        // left in the cache as pom-only. Scan the cache for those and force-download each jar, looped to a
-        // fixpoint because a recovered version's transitive closure may itself add new pom-only versions.
+        // Recovery: conflict resolution downloads only the WINNING version's jar per configuration; a real
+        // project with a different module subset can legitimately select a different version, whose artifacts
+        // must therefore also be mirrored. Two complementary passes cover the two ways such a version hides.
         def modulesRoot = new File(gradle.gradleUserHomeDir, 'caches/modules-2/files-2.1')
         def recovered = [] as Set
         def failed = 0
-        def round = 0
+
+        // Pass A - conflict losers (requested != selected), force-downloaded TRANSITIVELY. This re-expands
+        // subtrees Gradle evicted, so versions those subtrees declare but that were never fetched at all (no
+        // pom, no jar - invisible to a cache scan) are pulled in. Fixpoint: each recovered version's own graph
+        // may reveal deeper rejects.
+        def pending = new LinkedHashSet(rejectedVersions)
+        logger.lifecycle("resolveAll: recovery A - force-downloading ${pending.size()} conflict-rejected version(s)")
+        while (!pending.isEmpty()) {
+            def iter = pending.iterator()
+            def gav = iter.next()
+            iter.remove()
+            if (!recovered.add(gav)) {
+                continue
+            }
+            def rr = forceDownload(gav, sourcesSeen)
+            if (rr == null) {
+                failed++
+                continue
+            }
+            collectRejected(rr, pending) // deeper losers exposed by this version's own closure
+        }
+
+        // Pass B - cache-scan mop-up: any version left in the cache as pom-only-without-jar (a conflict loser
+        // whose pom WAS fetched during the normal resolve). Fixpoint because a recovered version's closure can
+        // add new pom-only entries. packaging=pom (BOMs/parent poms) are left alone - they have no jar.
+        def scanRound = 0
         while (true) {
             def pomOnly = findPomOnlyWithoutJar(modulesRoot, recovered)
             if (pomOnly.isEmpty()) {
                 break
             }
-            round++
-            logger.lifecycle("resolveAll: recovery round ${round} - ${pomOnly.size()} pom-only version(s) missing a jar")
+            scanRound++
+            logger.lifecycle("resolveAll: recovery B round ${scanRound} - ${pomOnly.size()} pom-only version(s) missing a jar")
             pomOnly.each { gav ->
                 recovered.add(gav) // mark before attempting so a jar-less BOM is tried once, not every round
-                if (!forceDownload(gav, sourcesSeen)) {
+                if (forceDownload(gav, sourcesSeen) == null) {
                     failed++
                 }
             }
         }
-        logger.lifecycle("resolveAll: recovered ${recovered.size() - failed} missing jar(s) over ${round} round(s) " +
-                "(${failed} pom-only/no-jar skipped)")
+        logger.lifecycle("resolveAll: recovered ${recovered.size() - failed} missing version jar(s) "
+                + "(${failed} pom-only/no-jar skipped)")
     }
 }

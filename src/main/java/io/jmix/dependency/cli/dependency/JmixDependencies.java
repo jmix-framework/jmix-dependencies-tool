@@ -23,6 +23,9 @@ public class JmixDependencies {
 
     private static final Logger log = LoggerFactory.getLogger(JmixDependencies.class);
 
+    /** Classpath base under which the shipped {@code dependencies-<version>.xml} descriptors live. */
+    private static final String DEFAULT_RESOURCE_BASE = "/jmix-dependencies";
+
     public static Set<String> getVersionSpecificJmixDependencies(DependencyScope scope,
                                                                  String jmixVersion,
                                                                  boolean resolveCommercialAddons) {
@@ -33,41 +36,55 @@ public class JmixDependencies {
                                                                  String jmixVersion,
                                                                  boolean resolveCommercialAddons,
                                                                  SubscriptionPlan plan) {
+        return getVersionSpecificJmixDependencies(DEFAULT_RESOURCE_BASE, scope, jmixVersion, resolveCommercialAddons, plan);
+    }
+
+    /**
+     * @param resourceBase classpath base holding {@code dependencies-<version>.xml} (normally
+     *                     {@code /jmix-dependencies}). Overridable so tests can validate the parsing / scope /
+     *                     minor+patch-merge logic against a fixed fixture set instead of the shipped descriptors.
+     */
+    public static Set<String> getVersionSpecificJmixDependencies(String resourceBase,
+                                                                 DependencyScope scope,
+                                                                 String jmixVersion,
+                                                                 boolean resolveCommercialAddons,
+                                                                 SubscriptionPlan plan) {
         String minorJmixVersion = JmixVersionUtils.getMinorVersion(jmixVersion);
 
         // A dependencies descriptor for the target version MUST be present. There is deliberately NO fallback:
         // silently resolving against a generic/default descriptor would produce a result that is obviously
         // incorrect for the requested version and hide the real problem (an unsupported version). Fail loudly
         // instead - see "Supporting a new framework version" in the README.
-        boolean minorPresent = dependenciesDescriptorExists(minorJmixVersion);
-        boolean patchPresent = dependenciesDescriptorExists(jmixVersion);
+        boolean minorPresent = dependenciesDescriptorExists(resourceBase, minorJmixVersion);
+        boolean patchPresent = dependenciesDescriptorExists(resourceBase, jmixVersion);
         if (!minorPresent && !patchPresent) {
             throw new IllegalStateException(
                     "No dependencies descriptor found for Jmix version '" + jmixVersion + "'. Expected classpath " +
-                    "resource '/jmix-dependencies/dependencies-" + minorJmixVersion + ".xml'" +
-                    " (or '/jmix-dependencies/dependencies-" + jmixVersion + ".xml'). " +
+                    "resource '" + resourceBase + "/dependencies-" + minorJmixVersion + ".xml'" +
+                    " (or '" + resourceBase + "/dependencies-" + jmixVersion + ".xml'). " +
                     "Add 'dependencies-" + minorJmixVersion + ".xml' for this version and retry.");
         }
 
         Set<String> dependencies = new HashSet<>();
         if (minorPresent) {
-            dependencies.addAll(_getVersionSpecificDependencies(scope, minorJmixVersion, resolveCommercialAddons, plan));
+            dependencies.addAll(_getVersionSpecificDependencies(resourceBase, scope, minorJmixVersion, resolveCommercialAddons, plan));
         }
         if (patchPresent) {
-            dependencies.addAll(_getVersionSpecificDependencies(scope, jmixVersion, resolveCommercialAddons, plan));
+            dependencies.addAll(_getVersionSpecificDependencies(resourceBase, scope, jmixVersion, resolveCommercialAddons, plan));
         }
         return dependencies;
     }
 
-    private static boolean dependenciesDescriptorExists(String version) {
-        return JmixDependencies.class.getResource("/jmix-dependencies/dependencies-" + version + ".xml") != null;
+    private static boolean dependenciesDescriptorExists(String resourceBase, String version) {
+        return JmixDependencies.class.getResource(resourceBase + "/dependencies-" + version + ".xml") != null;
     }
 
-    private static Set<String> _getVersionSpecificDependencies(DependencyScope scope,
+    private static Set<String> _getVersionSpecificDependencies(String resourceBase,
+                                                               DependencyScope scope,
                                                                String version,
                                                                boolean resolveCommercialAddons,
                                                                SubscriptionPlan plan) {
-        try (InputStream is = JmixDependencies.class.getResourceAsStream("/jmix-dependencies/dependencies-" + version + ".xml")) {
+        try (InputStream is = JmixDependencies.class.getResourceAsStream(resourceBase + "/dependencies-" + version + ".xml")) {
             if (is == null) {
                 log.debug("Dependencies file for version {} not found", version);
                 return new HashSet<>();

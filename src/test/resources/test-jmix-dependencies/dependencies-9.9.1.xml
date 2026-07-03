@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Stable TEST FIXTURE patch descriptor for the 9.9 line. Loaded on top of dependencies-9.9.xml for version
+     "9.9.1" to exercise the minor+patch merge and de-duplication (jvm-a below duplicates a 9.9 entry). -->
+<dependencies>
+    <open-source-dependencies>
+        <dependency scope="JVM">com.example:jvm-a</dependency>      <!-- duplicate of dependencies-9.9.xml -> deduped -->
+        <dependency scope="JVM">com.example:patch-jvm</dependency> <!-- new in the patch descriptor -->
+    </open-source-dependencies>
+</dependencies>

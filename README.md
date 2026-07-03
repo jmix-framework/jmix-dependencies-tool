@@ -376,30 +376,45 @@ gradle vaadinBuildFrontend -PjmixVersion=2.8.0 -PjmixPluginVersion=2.8.0 -PjmixM
 `resolveAll` resolves several configurations in a single Gradle build:
 
 * **all modules together** — the graph a full app produces (`compileClasspath`/`runtimeClasspath`). Always resolved.
-* **`iso_<n>`** — one configuration per module, each resolving that module's isolated transitive closure, so
-  the versions a *subset* of modules would select are captured too (under the Jmix BOM);
-* **`noBom`** — explicitly-versioned libraries resolved without the BOM.
+* **`iso_<n>_api` / `iso_<n>_rt`** — each module in isolation, so the versions a *subset* of modules would
+  select are captured too (under the Jmix BOM). Each module is resolved **twice** — as a compile classpath
+  (`api`) and as a runtime classpath (`rt`) — because the two select different Gradle variants and neither is a
+  superset: `api` carries compile-only transitive deps (e.g. Guava's compile-only `j2objc-annotations`, whose
+  version is pinned by `guava-parent`), `rt` carries implementation/runtime-only deps.
+* **`noBom_api` / `noBom_rt`** — explicitly-versioned libraries resolved without the BOM, same two variants.
 
-The `iso_<n>` and `noBom` configurations are created only when the **`-PisolatedResolution`** property is
-present. It is the switch that turns on this extra per-module coverage: `resolve-jmix` and `resolve-lib` pass
-it automatically (they want the widest possible set of versions), while `resolve-npm` does not — the Vaadin
-frontend build only needs all modules together on the classpath, so the per-module configurations would be
-wasted work there.
+These per-module configurations **copy the resolution attributes of the real `compileClasspath`/`runtimeClasspath`**.
+A raw configuration with no attributes resolves a default/runtime variant and silently misses compile-only deps,
+so a module isolated to an older library version would fail to collect that version's compile-only children.
+
+The isolated configurations are created only when the **`-PisolatedResolution`** property is present. It is the
+switch that turns on this extra per-module coverage: `resolve-jmix` and `resolve-lib` pass it automatically
+(they want the widest possible set of versions), while `resolve-npm` does not — the Vaadin frontend build only
+needs all modules together on the classpath, so the per-module configurations would be wasted work there.
 
 Sources (`-sources` jars) are fetched for every resolved component unless `--no-sources` is passed; the
-query is de-duplicated across the heavily-overlapping configurations. `iso_<n>` names are zero-padded to a
-fixed width so they process in numeric order.
+query is de-duplicated across the heavily-overlapping configurations. The isolated config names are zero-padded
+to a fixed width so they process in numeric order.
 
-**Pom-only jar recovery.** Gradle downloads the jar of only the *winning* version of each module in a
-conflict; for every other version it considered it downloads the `.pom` (to compare candidates) but no jar.
-A downstream project with a different module subset can legitimately select one of those non-winning
-versions, so its jar must still be in the mirror. After the normal resolve, `resolveAll` scans the Gradle
-module cache for every module version that has metadata (`.pom`/`.module`) but no main jar and downloads the
-missing jar through a detached, conflict-free configuration — looped to a fixpoint, since a recovered
-version's closure can reveal further pom-only versions. Modules whose pom declares `packaging=pom` (BOMs and
-parent poms, e.g. `io.jmix.bom`) are left as metadata-only, since they have no jar by design. Scanning the
-cache (rather than the resolution graph) catches both conflict *losers* and *ghosts* — versions whose pom was
-fetched while exploring a parent that was later evicted and so never appear in the final graph.
+**Rejected-version recovery.** Gradle downloads the jar of only the *winning* version of each module in a
+conflict. A downstream project with a different module subset can legitimately select a non-winning version,
+so those artifacts must be in the mirror too. After the normal resolve, `resolveAll` runs two complementary
+recovery passes (both use a detached, conflict-free, *transitive* configuration to download; both loop to a
+fixpoint; both skip `packaging=pom` BOMs/parent poms, which have no jar by design):
+
+* **Pass A — conflict losers, force-downloaded transitively.** It walks every configuration's resolution
+  graph for versions that were *requested but not selected* (`requested != selected`) and force-downloads each
+  one transitively. Resolving the loser transitively re-expands the subtree that conflict resolution evicted,
+  so the versions that subtree declares — which may never have been fetched at all, not even as a pom (e.g. an
+  older Guava dropped before its subtree was explored, whose `j2objc-annotations` version is otherwise
+  invisible) — are pulled in. Each recovered version's own graph is re-scanned for deeper losers.
+* **Pass B — cache-scan mop-up.** It scans the Gradle module cache for any version left with metadata
+  (`.pom`/`.module`) but no main jar (a conflict loser whose pom *was* fetched during the normal resolve) and
+  downloads the missing jar.
+
+Together they cover both ways a needed version hides: one where its coordinate survives in the graph as a
+rejected edge (Pass A, which also drags in its transitive closure), and one where only its pom reached the
+cache (Pass B). `--no-sources` skips only the `-sources` jars, never the main jars.
 
 ### npm resolution
 

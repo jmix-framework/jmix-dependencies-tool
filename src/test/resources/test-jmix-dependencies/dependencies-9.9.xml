@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Stable TEST FIXTURE (not a real Jmix version). Exercises scope filtering, commercial resolution and the
+     minor+patch merge in JmixDependencies, independent of the shipped dependencies-*.xml. Counts are pinned in
+     JmixDependenciesTest; keep them in sync if you edit this file. -->
+<dependencies>
+    <open-source-dependencies>
+        <!-- no scope attribute => counts for BOTH JVM and NPM -->
+        <dependency>com.example:both-a</dependency>
+        <dependency>com.example:both-b</dependency>
+        <!-- JVM only -->
+        <dependency scope="JVM">com.example:jvm-a</dependency>
+        <dependency scope="JVM">com.example:jvm-b</dependency>
+        <dependency scope="JVM">com.example:jvm-c</dependency>
+        <!-- NPM only -->
+        <dependency scope="NPM">example-npm-a</dependency>
+    </open-source-dependencies>
+    <commercial-dependencies>
+        <dependency scope="JVM">io.jmix.bpm:bpm-a</dependency>          <!-- io.jmix.bpm => excluded by ENTERPRISE -->
+        <dependency scope="JVM">io.jmix.tabbedmode:tab-a</dependency>  <!-- allowed by both BPM and ENTERPRISE -->
+    </commercial-dependencies>
+</dependencies>
