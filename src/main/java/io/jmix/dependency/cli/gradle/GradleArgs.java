@@ -72,6 +72,14 @@ public class GradleArgs {
         return this;
     }
 
+    /**
+     * Overrides the Gradle daemon JVM args ({@code org.gradle.jvmargs}). When blank, {@code JmixGradleClient}
+     * applies its default heap setting instead.
+     */
+    public GradleArgs gradleJvmArgs(String value) {
+        return prop("org.gradle.jvmargs", value);
+    }
+
     /** The comma-separated list of dependencies (GAV) to resolve. */
     public GradleArgs modules(Collection<String> modules) {
         if (modules != null && !modules.isEmpty()) {

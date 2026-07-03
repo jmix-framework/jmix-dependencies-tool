@@ -67,6 +67,10 @@ public class ResolveJmixCommand implements BaseCommand {
     @Parameter(names = {"--no-sources"}, description = "Skip downloading -sources jars (faster resolution). Sources are included by default.", order = 11)
     private boolean noSources;
 
+    @Parameter(names = {"--gradle-jvmargs"}, description = "Override the Gradle daemon JVM args (e.g. '-Xmx4g'). Default: "
+            + JmixGradleClient.DEFAULT_GRADLE_JVM_ARGS, order = 12)
+    private String gradleJvmArgs;
+
     @Override
     public void run() {
         JmixVersion parsedVersion = JmixVersion.from(jmixVersion);
@@ -103,6 +107,7 @@ public class ResolveJmixCommand implements BaseCommand {
         GradleArgs gradleArgs = GradleArgs.create()
                 .jmix(jmixVersion, jmixPluginVersion, jmixLicenseKey, publicRepository, premiumRepository, repositories)
                 .modules(modules)
+                .gradleJvmArgs(gradleJvmArgs)
                 .flag("isolatedResolution")
                 .raw("--stacktrace")
                 .raw("--info");

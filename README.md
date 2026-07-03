@@ -71,6 +71,7 @@ These apply to `resolve-jmix`, `resolve-npm`, and `resolve-lib`:
 | `--gradle-user-home` | `../gradle-home` | Directory Gradle resolves into (what `export` later reads). |
 | `--workspace-dir` | `../work` | Where the throw-away resolution project is generated (`<dir>/project`). |
 | `--gradle-version` | per Jmix line¹ | Gradle distribution the generated wrapper downloads and runs. |
+| `--gradle-jvmargs` | `-Xmx2g -XX:MaxMetaspaceSize=512m` | JVM args for the Gradle daemon. |
 | `--jmix-license-key` | – | License key `user-password`; adds the premium repo for commercial artifacts. |
 | `--public-repository` | `https://global.repo.jmix.io/repository/public` | Repository for public artifacts. |
 | `--premium-repository` | `https://global.repo.jmix.io/repository/premium` | Repository for premium artifacts. |

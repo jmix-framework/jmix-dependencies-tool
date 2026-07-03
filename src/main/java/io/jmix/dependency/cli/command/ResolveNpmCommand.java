@@ -78,6 +78,10 @@ public class ResolveNpmCommand implements BaseCommand {
             order = 11)
     private String commercialSubscriptionPlan;
 
+    @Parameter(names = {"--gradle-jvmargs"}, description = "Override the Gradle daemon JVM args (e.g. '-Xmx4g'). Default: "
+            + JmixGradleClient.DEFAULT_GRADLE_JVM_ARGS, order = 12)
+    private String gradleJvmArgs;
+
     @Override
     public void run() {
         JmixVersion parsedVersion = JmixVersion.from(jmixVersion);
@@ -116,6 +120,7 @@ public class ResolveNpmCommand implements BaseCommand {
         GradleArgs args = GradleArgs.create()
                 .jmix(jmixVersion, jmixPluginVersion, jmixLicenseKey, publicRepository, premiumRepository, repositories)
                 .modules(modules)
+                .gradleJvmArgs(gradleJvmArgs)
                 .raw("--stacktrace")
                 .raw("--info");
 
