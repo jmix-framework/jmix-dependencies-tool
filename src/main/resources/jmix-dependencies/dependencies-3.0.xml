@@ -210,13 +210,12 @@
         <dependency>com.hazelcast:hazelcast</dependency>
         <dependency>com.hazelcast.spring:hazelcast-spring-session</dependency>
 
-        <!-- cloud integrations (Oracle EclipseLink, Azure, Google Cloud) -->
+        <!-- cloud integrations -->
         <dependency>org.eclipse.persistence:org.eclipse.persistence.oracle</dependency>
         <dependency>com.microsoft.azure:msal4j</dependency>
         <dependency>com.google.auth:google-auth-library-oauth2-http</dependency>
 
         <!-- optional Spring Boot starters -->
-        <dependency>org.springframework.boot:spring-boot-starter-websocket</dependency>
         <dependency>org.springframework.boot:spring-boot-web-server</dependency>
 
         <!-- misc -->

@@ -169,6 +169,22 @@
         <dependency>com.microsoft.sqlserver:mssql-jdbc</dependency>
         <dependency>com.oracle.database.jdbc:ojdbc8</dependency>
 
+        <!-- Optional dependencies declared 'compileOnly' by Jmix modules. compileOnly is not transitive and is
+             absent from the published module POMs, so these cannot be discovered by resolving the modules and
+             must be listed here to be mirrored. A project enables the corresponding feature by adding the
+             dependency explicitly. Versions are managed by the Jmix BOM, so they are declared version-less.
+             Listed ONLY if declared as compileOnly framework-wide: deps that some module also declares as a
+             normal api/implementation dependency are already resolved transitively and must not be added here. -->
+
+        <!-- clustering (Hazelcast) -->
+        <dependency>com.hazelcast:hazelcast</dependency>
+
+        <!-- cloud integrations -->
+        <dependency>org.eclipse.persistence:org.eclipse.persistence.oracle</dependency>
+
+        <!-- misc -->
+        <dependency>jakarta.transaction:jakarta.transaction-api</dependency>
+
     </open-source-dependencies>
 
     <commercial-dependencies>
