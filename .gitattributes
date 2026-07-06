@@ -1,0 +1,8 @@
+# The Gradle wrapper scripts are POSIX shell scripts executed on Linux (incl. the CI Docker image).
+# CRLF line endings break the shebang (#!/bin/sh\r -> "No such file or directory"), so force LF - never
+# let a Windows checkout convert them to CRLF.
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Windows batch scripts keep CRLF.
+*.bat text eol=crlf

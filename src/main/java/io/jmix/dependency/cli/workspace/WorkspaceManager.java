@@ -146,7 +146,10 @@ public class WorkspaceManager {
         writeResource(templatesRoot + "/wrapper/gradle-wrapper.jar", wrapperDir.resolve("gradle-wrapper.jar"));
 
         Path gradlew = dir.resolve("gradlew");
-        writeResource(templatesRoot + "/wrapper/gradlew", gradlew);
+        // The POSIX gradlew MUST have LF line endings: a CRLF shebang (#!/bin/sh\r) makes Linux look for the
+        // interpreter "/bin/sh\r" and fail with "No such file or directory". Normalize on write so the tool is
+        // robust even if the bundled resource (or the built jar) picked up CRLF on a Windows checkout.
+        writeUnixScript(templatesRoot + "/wrapper/gradlew", gradlew);
         writeResource(templatesRoot + "/wrapper/gradlew.bat", dir.resolve("gradlew.bat"));
         // Restore the executable bit lost when shipping the script as a resource (no-op on Windows).
         gradlew.toFile().setExecutable(true, false);
@@ -260,6 +263,20 @@ public class WorkspaceManager {
             }
             Files.createDirectories(target.getParent());
             Files.copy(is, target);
+        }
+    }
+
+    /** Writes a shell script resource with LF line endings (a CRLF shebang is unrunnable on Linux). */
+    private void writeUnixScript(String resource, Path target) throws IOException {
+        try (InputStream is = classpath(resource)) {
+            if (is == null) {
+                throw new IllegalStateException("Missing bundled resource: " + resource);
+            }
+            String content = new String(is.readAllBytes(), StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n")
+                    .replace("\r", "\n");
+            Files.createDirectories(target.getParent());
+            Files.writeString(target, content, StandardCharsets.UTF_8);
         }
     }
 
