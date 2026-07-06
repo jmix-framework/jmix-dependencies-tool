@@ -344,7 +344,7 @@ deptool (single Gradle module)
 
 Package descriptions are intentionally high-level — the purpose of each package, not a class-by-class list.
 
-### One generated project, not two
+### Single generated project
 
 A real Jmix app is a **single** project that carries both its Java and (via the Vaadin plugin) its npm
 dependencies. deptool therefore generates one unified project rather than separate Java/NPM resolvers. The
