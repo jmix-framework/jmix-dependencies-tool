@@ -1,4 +1,11 @@
-FROM eclipse-temurin:17-jdk-alpine
+# Base JDK image for the resolution build, driven by the target Jmix line: 3.x requires JDK 21 (the io.jmix
+# Gradle plugin 3.0 refuses to run below 21), 2.x also works on 21, but 1.x needs <=17 (its Gradle 7.6 cannot
+# run on JDK 21). The default covers current lines; for the 1.x line pass
+# --build-arg BASE_IMAGE=eclipse-temurin:17-jdk-alpine.
+# The whole reference is parameterized (not just the version) because Temurin's Alpine tags are not uniform:
+# 21 is 'eclipse-temurin:21-alpine' while 17 is 'eclipse-temurin:17-jdk-alpine'.
+ARG BASE_IMAGE=eclipse-temurin:21-alpine
+FROM ${BASE_IMAGE}
 
 ARG JMIX_VERSION=1.5.0
 ARG JMIX_PLUGIN_VERSION=${JMIX_VERSION}

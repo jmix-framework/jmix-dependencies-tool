@@ -17,8 +17,12 @@ resolve-jmix   resolve-lib   resolve-npm   export   export-npm   upload   upload
 
 ## Installation
 
-A Java 17+ runtime must be installed on the machine. **Node.js is not required** — npm export is pure Java,
-and `resolve-npm` lets the Vaadin plugin download Node automatically.
+A JDK must be installed on the machine, and the required version depends on the **target Jmix line**. The
+resolution build models a real Jmix app of that line, so the host JDK must satisfy everything that build needs
+— its Gradle distribution, the io.jmix Gradle plugin, **and the framework's own Java baseline**: **Jmix 3.x
+requires JDK 21**, **2.x** runs on JDK 17 or 21, and **1.x needs JDK ≤ 17** (its Gradle 7.6 can't run on JDK
+21). When in doubt use **JDK 21** for 2.x/3.x. **Node.js is not required** — npm export is pure Java, and
+`resolve-npm` lets the Vaadin plugin download Node automatically.
 
 The tool distribution (zip archive) is produced by the build (see [Building](#building)) — extract it and
 use `bin/deptool` (Linux/macOS) or `bin/deptool.bat` (Windows) to run commands.
@@ -448,7 +452,11 @@ checkpoint rule below), and the wrapper is run as a subprocess with `--no-daemon
 * The tool's own Gradle/JVM is decoupled from the daemon Gradle — one binary resolves 1.x (Gradle 7), 2.x
   (Gradle 8) and 3.x (Gradle 9.5) builds, each on its own wrapper-downloaded distribution.
 * `--gradle-version` overrides the recommended version per run.
-* The only host requirement is a JVM that can launch every distribution: **JDK 17 covers Gradle 7.x–9.x.**
+* The host JDK must run the **whole resolution build** for that line — its Gradle distribution, the io.jmix
+  Gradle plugin, and the framework's own Java baseline (the generated project mirrors a real Jmix app). Gradle
+  itself is lenient (7.x–9.x all run on JDK 17), so the **Jmix line** sets the real floor: **3.x requires JDK
+  21**, 2.x runs on 17+, and 1.x needs JDK ≤ 17 (Gradle 7.6 can't run on JDK 21). So no single JDK spans 1.x
+  and 3.x; pick the JDK for the line you're resolving (the Docker image exposes a `BASE_IMAGE` arg).
 * `--no-daemon` means nothing lingers to lock the gradle-user-home that `export` later walks.
 
 ### Checkpoint template selection
