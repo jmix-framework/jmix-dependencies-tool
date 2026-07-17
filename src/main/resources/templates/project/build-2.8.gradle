@@ -32,13 +32,21 @@ vaadin {
 }
 
 repositories {
-    mavenCentral()
-    // jmix-saml pulls org.opensaml artifacts that live only in the Shibboleth repo.
-    maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases' }
-    // For collecting Gradle plugin markers the END project applies via the plugins {} DSL (e.g. idea-ext), so
-    // they end up in the offline repo; it also proxies Maven Central. (The Jmix public/premium and any extra
-    // repositories are version-agnostic and added by resolve-support.gradle.)
-    gradlePluginPortal()
+    // io.jmix artifacts live only in the Jmix repositories, never in Maven Central - exclude the group so
+    // Gradle skips a guaranteed-miss lookup here for every Jmix module before falling through to them.
+    mavenCentral {
+        content { excludeGroupByRegex 'io\\.jmix.*' }
+    }
+    // jmix-saml needs org.opensaml / net.shibboleth artifacts that live only in the Shibboleth repo. The
+    // content filter restricts Gradle to querying this repo ONLY for those groups, so it is never hit for any
+    // other artifact - independent of repository order (avoids a pointless remote lookup per missing artifact).
+    maven {
+        url 'https://build.shibboleth.net/nexus/content/repositories/releases'
+        content {
+            includeGroupByRegex 'org\\.opensaml.*'
+            includeGroupByRegex 'net\\.shibboleth.*'
+        }
+    }
 }
 
 configurations.all {
@@ -58,3 +66,10 @@ dependencies {
 }
 
 apply from: 'resolve-support.gradle'
+
+// gradlePluginPortal hosts Gradle plugin markers (and proxies Maven Central). Declared LAST - after
+// resolve-support's repositories - so Gradle searches it only after mavenCentral and the Jmix repos and is
+// not queried for the many artifacts those already serve. (Needed for plugin markers such as idea-ext.)
+repositories {
+    gradlePluginPortal()
+}

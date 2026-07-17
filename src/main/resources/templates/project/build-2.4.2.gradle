@@ -32,11 +32,11 @@ vaadin {
 }
 
 repositories {
-    mavenCentral()
-    // For collecting Gradle plugin markers the END project applies via the plugins {} DSL (e.g. idea-ext), so
-    // they end up in the offline repo; it also proxies Maven Central. (The Jmix public/premium and any extra
-    // repositories are version-agnostic and added by resolve-support.gradle.)
-    gradlePluginPortal()
+    // io.jmix artifacts live only in the Jmix repositories, never in Maven Central - exclude the group so
+    // Gradle skips a guaranteed-miss lookup here for every Jmix module before falling through to them.
+    mavenCentral {
+        content { excludeGroupByRegex 'io\\.jmix.*' }
+    }
 }
 
 configurations.all {
@@ -56,3 +56,10 @@ dependencies {
 }
 
 apply from: 'resolve-support.gradle'
+
+// gradlePluginPortal hosts Gradle plugin markers (and proxies Maven Central). Declared LAST - after
+// resolve-support's repositories - so Gradle searches it only after mavenCentral and the Jmix repos and is
+// not queried for the many artifacts those already serve. (Needed for plugin markers such as idea-ext.)
+repositories {
+    gradlePluginPortal()
+}

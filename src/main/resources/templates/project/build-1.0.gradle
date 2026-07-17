@@ -25,7 +25,11 @@ jmix {
 }
 
 repositories {
-    mavenCentral()
+    // io.jmix artifacts live only in the Jmix repositories, never in Maven Central - exclude the group so
+    // Gradle skips a guaranteed-miss lookup here for every Jmix module before falling through to them.
+    mavenCentral {
+        content { excludeGroupByRegex 'io\\.jmix.*' }
+    }
     // The Jmix public/premium and any extra repositories are version-agnostic and added by resolve-support.gradle.
 }
 
