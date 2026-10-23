@@ -1,0 +1,85 @@
+// =====================================================================================
+// deptool resolution project (generated at runtime) - checkpoint 3.1.
+//
+// Changes:
+//   * 'productionMode = true' (was false): since Vaadin 25.3 vaadinBuildFrontend is skipped unless production
+//     mode is enabled (onlyIf 'Vaadin production mode is enabled'), so npm install never ran. The npm part of
+//     the task always ran Vaadin's production branch anyway (its Options default to productionMode=true), so
+//     the resolved package set is the same as with 3.0.
+//   * Added 'forceProductionBuild = true': otherwise Vaadin may reuse the precompiled vaadin-prod-bundle and
+//     skip npm install, leaving the seeded package-lock.json empty.
+//
+// Project SHAPE only; the shared resolution mechanism (dependencies, iso configs, resolveAll) lives in
+// resolve-support.gradle (applied at the end).
+// =====================================================================================
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        if (project.hasProperty('jmixPluginVersion')) {
+            classpath "io.jmix.gradle:jmix-gradle-plugin:${project.findProperty('jmixPluginVersion')}"
+        }
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'io.jmix'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.vaadin'
+
+jmix {
+    bomVersion = project.findProperty('jmixVersion')
+}
+
+vaadin {
+    optimizeBundle = false
+    productionMode = true
+    forceProductionBuild = true
+}
+
+repositories {
+    // io.jmix artifacts live only in the Jmix repositories, never in Maven Central - exclude the group so
+    // Gradle skips a guaranteed-miss lookup here for every Jmix module before falling through to them.
+    mavenCentral {
+        content { excludeGroupByRegex 'io\\.jmix.*' }
+    }
+    // jmix-saml needs org.opensaml / net.shibboleth artifacts that live only in the Shibboleth repo. The
+    // content filter restricts Gradle to querying this repo ONLY for those groups, so it is never hit for any
+    // other artifact - independent of repository order (avoids a pointless remote lookup per missing artifact).
+    maven {
+        url 'https://build.shibboleth.net/nexus/content/repositories/releases'
+        content {
+            includeGroupByRegex 'org\\.opensaml.*'
+            includeGroupByRegex 'net\\.shibboleth.*'
+        }
+    }
+}
+
+configurations.all {
+    exclude group: 'com.vaadin', module: 'hilla'
+    exclude group: 'com.vaadin', module: 'hilla-dev'
+    exclude group: 'com.vaadin', module: 'copilot'
+}
+
+// The end project applies the idea-ext Gradle plugin via the plugins {} DSL, which needs its plugin MARKER
+// (and, transitively, the implementation) in the offline repo. Resolving the marker collects both -
+// resolveAll (in resolve-support.gradle) resolves every resolvable configuration. The marker coordinate is
+// always <pluginId>:<pluginId>.gradle.plugin:<version>. Add more lines for other plugins the end project
+// applies via plugins {} without a pluginManagement mapping.
+configurations.create('gradlePlugins')
+dependencies {
+    add('gradlePlugins', 'org.jetbrains.gradle.plugin.idea-ext:org.jetbrains.gradle.plugin.idea-ext.gradle.plugin:1.4.1')
+
+    // Brings vaadin-dev-bundle, whose package-lock.json (the framework's frozen npm versions) resolve-npm extracts.
+    implementation 'com.vaadin:vaadin-dev'
+}
+
+apply from: 'resolve-support.gradle'
+
+// gradlePluginPortal hosts Gradle plugin markers (and proxies Maven Central). Declared LAST - after
+// resolve-support's repositories - so Gradle searches it only after mavenCentral and the Jmix repos and is
+// not queried for the many artifacts those already serve. (Needed for plugin markers such as idea-ext.)
+repositories {
+    gradlePluginPortal()
+}

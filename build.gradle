@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'io.jmix.deptool'
-version = project.findProperty('version') ?: '3.0.999-SNAPSHOT'
+version = project.findProperty('version') ?: '3.1.999-SNAPSHOT'
 
 // Compile with the JVM that runs Gradle (must be Java 17+). We intentionally do NOT use a Java
 // toolchain: toolchain resolution fails in IDEs whose Gradle JVM isn't auto-detected as a match and
