@@ -2,6 +2,7 @@ package io.jmix.dependency.cli.upload;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.jmix.dependency.cli.upload.model.Artifact;
 import io.jmix.dependency.cli.upload.model.ArtifactNpm;
@@ -120,13 +121,16 @@ public class NexusRepositoryManager {
     }
 
     /**
-     * Checks whether an NPM artifact is uploaded to Nexus repository
+     * Checks whether an NPM artifact is uploaded to Nexus repository.
+     * <p>
+     * Nexus searches npm assets by the unscoped name, so {@code name=react&version=19.3.0} also returns
+     * {@code @types/react@19.3.0}. Only an asset at this artifact's exact path counts as uploaded.
      */
     public boolean isNpmArtifactUploaded(ArtifactNpm artifact) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             String artifactUrl = this.nexusUrl + "/service/rest/v1/search/assets?"
                     + "repository=" + repositoryName
-                    + "&name=" + artifact.getModuleName()
+                    + "&name=" + artifact.getUnscopedName()
                     + "&version=" + artifact.getVersion();
             logger.info("Search artifact Url={}", artifactUrl);
 
@@ -141,7 +145,13 @@ public class NexusRepositoryManager {
                         JsonObject jsonResp = new Gson().fromJson(responseString, JsonObject.class);
                         if (jsonResp.has("items") && jsonResp.get("items").isJsonArray()) {
                             JsonArray items = jsonResp.getAsJsonArray("items");
-                            return !items.isEmpty();
+                            for (JsonElement item : items) {
+                                JsonElement path = item.isJsonObject() ? item.getAsJsonObject().get("path") : null;
+                                if (path != null && path.isJsonPrimitive()
+                                        && artifact.matchesRepositoryPath(path.getAsString())) {
+                                    return true;
+                                }
+                            }
                         }
                     }
                     return false;

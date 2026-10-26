@@ -7,7 +7,6 @@ import io.jmix.dependency.cli.upload.model.ArtifactNpm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -38,54 +37,56 @@ public class UploadNpmCommand implements BaseCommand {
 
     @Override
     public void run() {
-        Map<String, ArtifactNpm> artifacts = new TreeMap<>();
-
         log.info("Artifacts directory: {}", Paths.get(artifactsDirectoryPath).toAbsolutePath().normalize());
         NexusRepositoryManager nexusRepositoryManager = new NexusRepositoryManager(nexusUrl, repositoryName, username, password);
-        try {
-            Path rootLocalRepoDir = Paths.get(artifactsDirectoryPath);
-            Files.walkFileTree(rootLocalRepoDir, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) throws IOException {
-                    log.debug("Processing file: {}", filePath);
-                    if (!canProcessFile(filePath)) {
-                        log.debug("Cannot process file {}. The file will not be uploaded", filePath.getFileName());
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    Path relativeFilePath = rootLocalRepoDir.relativize(filePath);
-                    log.debug("relativeFilePath: {}", relativeFilePath);
-                    Path relativeParentPath = relativeFilePath.getParent();
-                    log.debug("relativeParentPath: {}", relativeParentPath);
-                    File parentFile = relativeParentPath.toFile();
-                    log.debug("parentFile: {}", parentFile);
-                    File file = filePath.toFile();
-                    log.debug("file: {}", file);
-                    ArtifactNpm artifact = ArtifactNpm.createFromPackage(file);
-                    artifacts.putIfAbsent(artifact.getAsset(), artifact);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            log.error("Error on walking through local repository directory", e);
-        }
+        Map<String, ArtifactNpm> artifacts = collectArtifacts(Paths.get(artifactsDirectoryPath));
 
         log.info("Artifact uploading started");
 
         for (ArtifactNpm artifact : artifacts.values()) {
-            log.info("Process artifact '{}'", artifact.getAsset());
+            log.info("Process artifact '{}'", artifact.getKey());
             if (!nexusRepositoryManager.isNpmArtifactUploaded(artifact)) {
-                log.info("Start uploading artifact '{}'", artifact.getAsset());
+                log.info("Start uploading artifact '{}'", artifact.getKey());
                 nexusRepositoryManager.uploadNpmArtifacts(artifact);
             } else {
-                log.info("Artifact '{}' already uploaded", artifact.getAsset());
+                log.info("Artifact '{}' already uploaded", artifact.getKey());
             }
         }
 
         log.info("Upload completed successfully");
     }
 
-    private boolean canProcessFile(Path file) {
+    /**
+     * Collects the tarballs of an export-npm directory, keyed by {@code name@version}. The key includes the scope:
+     * {@code react} and {@code @types/react} can share the file name {@code react-19.3.0.tgz}.
+     */
+    public static Map<String, ArtifactNpm> collectArtifacts(Path artifactsDir) {
+        Map<String, ArtifactNpm> artifacts = new TreeMap<>();
+        try {
+            Files.walkFileTree(artifactsDir, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) {
+                    log.debug("Processing file: {}", filePath);
+                    if (!canProcessFile(filePath)) {
+                        log.debug("Cannot process file {}. The file will not be uploaded", filePath.getFileName());
+                        return FileVisitResult.CONTINUE;
+                    }
+                    try {
+                        ArtifactNpm artifact = ArtifactNpm.createFromPackage(artifactsDir, filePath);
+                        artifacts.put(artifact.getKey(), artifact);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("{}. The file will not be uploaded", e.getMessage());
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            log.error("Error on walking through local repository directory", e);
+        }
+        return artifacts;
+    }
+
+    private static boolean canProcessFile(Path file) {
         String fileName = file.getFileName().toString();
         return fileName.endsWith(".tgz");
     }
